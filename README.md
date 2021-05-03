@@ -15,5 +15,9 @@ With the use of a very powerful lemma, we can solve this problem. The Ping Pong 
 
 Our algorithm can now search for these collections of intervals and then check the conditions of the lemma instead of using the brute force approach. There are some things we know about the intervals which lowers the number of cases we need to search but we will not enumerate all of them here. One example is that the intervals must contain the eigenvectors of the matrix generators.
 
+<p align='center'>
+  <img src='./imgs/good_intervals.JPG' width='500'>
+</p>
+
 ## The Code
 The main program to look at in this repository is generalized_search.py. To test the algorithm on a free group of n generators, change the line in main 'generators = free_group_generators(6, val = 0.5)' to include the number of generators you want followed by the range of values you want to appear in the randomly generated matrices.

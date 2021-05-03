@@ -18,7 +18,7 @@ Our algorithm can now search for these collections of intervals and then check t
 Below is an example of such intervals in RP1 which contain the images of the other intervals. Since these are disjoint and we have full containment, we know that the matrices corresponding to these intervals generate a group with a faithful action on RP1.
 
 <p align='center'>
-  <img src='./imgs/good_intervals.JPG' width='500'>
+  <img src='./imgs/good_intervals.JPG' width='400'>
 </p>
 
 ## The Code

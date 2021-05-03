@@ -15,6 +15,8 @@ With the use of a very powerful lemma, we can solve this problem. The Ping Pong 
 
 Our algorithm can now search for these collections of intervals and then check the conditions of the lemma instead of using the brute force approach. There are some things we know about the intervals which lowers the number of cases we need to search but we will not enumerate all of them here. One example is that the intervals must contain the eigenvectors of the matrix generators.
 
+Below is an example of such intervals in RP1 which contain the images of the other intervals. Since these are disjoint and we have full containment, we know that the matrices corresponding to these intervals generate a group with a faithful action on RP1.
+
 <p align='center'>
   <img src='./imgs/good_intervals.JPG' width='500'>
 </p>

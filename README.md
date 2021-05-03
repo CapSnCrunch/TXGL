@@ -12,3 +12,7 @@ With the use of a very powerful lemma, we can solve this problem. The Ping Pong 
 <p align='center'>
   <img src='./imgs/pingpong.JPG' width='600'>
 </p>
+
+Our algorithm can now search for these collections of intervals and then check the conditions of the lemma instead of using the brute force approach. There are some things we know about the intervals which lowers the number of cases we need to search but we will not enumerate all of them here. One example is that the intervals must contain the eigenvectors of the matrix generators.
+
+## The Code

@@ -8,4 +8,5 @@ A group action is considered faithful if there are no elements g in G for which 
 
 ## Ping Pong Lemma
 With the use of a very powerful lemma, we can solve this problem. The Ping Pong Lemma essentailly tells us that if we can find some collection of disjoint sets of RP1 depending on G, we are able to make a finite number of calculations to determine that the group action is faithful.
-<img src="./imgs/pingpong.JPG" width="400">
+
+<img src="./imgs/pingpong.JPG" width="800">

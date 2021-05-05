@@ -22,4 +22,4 @@ Below is an example of such intervals in RP1 which contain the images of the oth
 </p>
 
 ## The Code
-The main program to look at in this repository is generalized_search.py. To test the algorithm on a free group of n generators, change the line in main 'generators = free_group_generators(6, val = 0.5)' to include the number of generators you want followed by the range of values you want to appear in the randomly generated matrices.
+The main programs to look at in this repository are generalized_search.py and interface.py. To test the algorithm on a free group on n generators in generalized_search.py, change the line in main 'generators = free_group_generators(6, val = 0.5)' to include the number of generators you want followed by the range of values you want to appear in the randomly generated matrices. If you want a guided walkthrough of input options, use interface.py.

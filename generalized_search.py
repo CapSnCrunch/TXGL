@@ -1,5 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
+import random
 
 from matplotlib.patches import Circle, Arc
 
@@ -7,7 +8,7 @@ class Interval():
     def __init__(self, a, b, mat, letters, color):
         self.a = a % np.pi
         self.b = b % np.pi
-        self.e1 = 0
+        self.e1 = 0 #epsilon
         self.e2 = 0
         self.mat = mat
         self.color = color

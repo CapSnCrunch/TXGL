@@ -111,28 +111,26 @@ def free_group_generators(n, mult, conjugate = False):
 
 # Free Product Stuff
 # n is num of generators, orders is list of finite order of generators you want
-def free_product_graph(n, orders):
+'''def free_product_graph(n, orders):
     let_alphabet = [A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P]
     
-
-
     for i in range(n):
-        let_alphabet[i] = free_product_generators(n, orders)[i]
+        let_alphabet[i] = free_product_generators(n, orders, mult)[i]
         num = orders[i]
 
         for j in range(num):
-            let_alphabet[i].append(A**2)
+            let_alphabet[i].append(A**2)'''
     
     
-
-def free_product_generators(n, orders):
+def free_product_generators(n, orders, mult):
     
     fp_generators = []
 
     for i in range(n):
 
         angle = np.pi / orders[i]
-        mat = rotation_matrix(angle)
+        X = rand_matrix(mult)
+        mat = X @ rotation_matrix(angle) @ np.linalg.inv(X)
         fp_generators.append(mat)
 
     return fp_generators
@@ -336,11 +334,11 @@ class PingPong():
             interval.nearest_endpoints(self.intervals)
 
         # Display nearest intervals for debug
-        for interval in self.intervals:
+        '''for interval in self.intervals:
             print(interval.a, interval.b)
             print('NEAREST TO A', interval.nearest_interval_a.a, interval.nearest_interval_a.b)
             print('NEAREST TO B', interval.nearest_interval_b.a, interval.nearest_interval_b.b)
-            print()
+            print()'''
 
         # Geometric expansion factor (must be <0.5)
         # (expand epsilon by the max distance it could expand times geo)
@@ -531,6 +529,7 @@ if __name__ == '__main__':
                                 ["c", "d"]] )  )
                 print()
                 print("Please fill in the letters for the entries of your generating matrices:")
+                print()
 
                 generators = []
                 eig_list = []

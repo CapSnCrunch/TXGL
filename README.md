@@ -22,9 +22,9 @@ Below is an example of such intervals in RP1 which contain the images of the oth
 </p>
 
 ## The Code
-The main programs to look at in this repository are generalized_search.py and interface.py. To test the algorithm on a free group on n generators in generalized_search.py, change the line in main 'generators = free_group_generators(6, val = 0.5)' to include the number of generators you want followed by the range of values you want to appear in the randomly generated matrices. If you want a guided walkthrough of input options, use interface.py.
+The main programs to look at in this repository are main.py and interface.py. To test the algorithm on a free group on n generators in main.py, change the line in main 'generators = free_group_generators(6, val = 0.5)' to include the number of generators you want followed by the range of values you want to appear in the randomly generated matrices. If you want a guided walkthrough of input options, use interface.py.
 
-## Setting up Python / Jupyter Notebook
+## Setting up Python / Jupyter Notebook (CURRENTLY UPDATING)
 If you want to run the program for yourself but don't use Python or GitHub, follow these instructions:
   - Download the latest version of Python here: https://www.python.org/downloads/ (Be sure to click the checkbox 'ADD PYTHON TO PATH' when installing)
   - Open Command Prompt and type 'pip install jupyterlab'

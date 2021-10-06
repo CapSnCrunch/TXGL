@@ -46,15 +46,19 @@ def free_group_generators(n, val = 2, conjugate = False):
         return generators
 
 # Free Product Stuff
-def free_product_graph(orders):
-    # Create the automatic structure for a free product group with the given orders
+def cyclic_free_product_graph(orders):
+    # Create the automatic structure for a cyclic free product group with the given orders
     pass
 
-def free_product_generators(orders):
-    # Create a collection generators for a free product group with the given orders
+def cyclic_free_product_generators(orders):
+    # Create a collection generators for a cyclic free product group with the given orders
     # TODO This doesnt actually work (maybe try conjugating them but we wont be sure)
     generators = []
     for order in orders:
         theta = 2*np.pi / order
         generators += [np.array([[np.cos(theta), -np.sin(theta)], [np.sin(theta), np.cos(theta)]])]
+    for i in range(1, len(generators)):
+        generators[i] = I @ generators[i] @ I
     return generators
+
+print(free_group_graph(2))

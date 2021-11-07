@@ -60,3 +60,5 @@ def cyclic_free_product_generators(orders):
     for i in range(1, len(generators)):
         generators[i] = I @ generators[i] @ I
     return generators
+
+print(free_group_graph(2))

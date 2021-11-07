@@ -1,9 +1,9 @@
 import numpy as np
 
-from interval_funcs import *
-from group_funcs import *
-from intervals import Interval
-from pingpong import PingPong
+from classes.interval_funcs import *
+from classes.group_funcs import *
+from classes.intervals import Interval
+from classes.pingpong import PingPong
 
 if __name__ == '__main__':
 

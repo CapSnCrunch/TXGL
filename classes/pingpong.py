@@ -7,6 +7,8 @@ from interval_funcs import *
 from group_funcs import *
 from intervals import Interval
 
+# SEPARATE SEARCH CODE FROM CHECKING CONTAINMENT CODE
+
 class PingPong():
     def __init__(self, generators, graph = None):
         self.generators = generators

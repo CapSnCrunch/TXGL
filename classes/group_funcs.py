@@ -61,4 +61,16 @@ def cyclic_free_product_generators(orders):
         generators[i] = I @ generators[i] @ I
     return generators
 
-print(free_group_graph(2))
+def allwords(graph, n):
+    if n == 1:
+        return list(graph.keys())
+    words = []
+    for word in allwords(graph, n-1):
+        for letter in graph[word[-1]]:
+            words.append(word + letter)
+    return words
+
+if __name__ == '__main__':
+    graph = {'1': ['2', '3'], '2': ['1'], '3': ['1']}
+    for i in range(30):
+        print('words of length ' + str(i+1) + ':', len(allwords(graph, i+1)))

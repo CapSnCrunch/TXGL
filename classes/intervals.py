@@ -1,8 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.patches import Circle, Arc
-
-from interval_funcs import *
+from classes.interval_funcs import *
 
 class Interval():
     def __init__(self, a, b, name, mat, letters, color):
@@ -63,7 +62,10 @@ class Interval():
 
         # Find the angles vectors occur at in order to compare
         b, a = get_arc_params(rp1_interval(self.a - self.e1, self.b + self.e2))
-        d, c = get_arc_params(self.mat @ I)
+        #d, c = get_arc_params(self.mat @ I)
+        d, c = get_arc_params(other.mat @ I)
+
+        print(' ', b, a, d, c)
 
         '''a, b = (self.a - self.e1) % ta, (self.b + self.e2) % ta
         c, d = (other.a - other.e1) % ta, (other.b + other.e2) % ta'''
@@ -113,6 +115,10 @@ class DisconnectedInterval():
         for comp in self.components:
             comp.draw(ax)
 
+    def draw_image(self, ax):
+        for comp in self.components:
+            comp.draw_image(ax)
+
     def combine(self):
         '''Combine / reduce intervals if they are overlapping
             (assumes that all intervals have the same name, mat, color) '''
@@ -142,6 +148,20 @@ class DisconnectedInterval():
             contained = False
             for comp1 in self.components:
                 if comp1.contains(comp2):
+                    contained = True
+                    break
+            if not contained:
+                return False
+        return True
+    
+    def contains_image(self, other):
+        self.combine()
+        other.combine()
+        for comp2 in other.components:
+            contained = False
+            for comp1 in self.components:
+                if comp1.contains_image(comp2):
+                    print(' component contained')
                     contained = True
                     break
             if not contained:

@@ -53,8 +53,8 @@ class Interval():
             else:    
                 return a < c and d < b
 
-    def contains_image(self, other):
-        # Check if interval contains the image of another interval
+    def contains_image(self, other, mat):
+        '''Check if mat @ other contained in self'''
         ta = 360
 
         # Get interval we want to take the image of as a pair of vectors
@@ -63,7 +63,7 @@ class Interval():
         # Find the angles vectors occur at in order to compare
         b, a = get_arc_params(rp1_interval(self.a - self.e1, self.b + self.e2))
         #d, c = get_arc_params(self.mat @ I)
-        d, c = get_arc_params(other.mat @ I)
+        d, c = get_arc_params(mat @ I)
 
         print(' ', b, a, d, c)
 
@@ -154,13 +154,13 @@ class DisconnectedInterval():
                 return False
         return True
     
-    def contains_image(self, other):
+    def contains_image(self, other, mat):
         self.combine()
         other.combine()
         for comp2 in other.components:
             contained = False
             for comp1 in self.components:
-                if comp1.contains_image(comp2):
+                if comp1.contains_image(comp2, mat):
                     print(' component contained')
                     contained = True
                     break

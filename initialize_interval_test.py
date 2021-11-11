@@ -21,33 +21,24 @@ A = np.linalg.inv(C) @ A @ C
 B = C @ B @ np.linalg.inv(C)
 
 letters = [A, B, B @ B]
-# graph = {'1' : ['2', '3'], '2' : ['1'], '3' : ['1']} # 1 corresponds to A, 2 to B, and 3 to B^-1
-graph = {'1' : [('2', B), ('3', B @ B)], '2' : [('1', A)], '3' : [('1', A)]}
+graph = {'0' : [('1', B), ('2', B @ B)], '1' : [('0', A)], '2' : [('0', A)]}
 
-words = allwords(graph, 5)
-separated_words = [[], [], []]
-for word in words:
-    separated_words[int(word[0])-1].append(word)
-
-for i in range(len(separated_words)):
-    separated_words[i] = matrize(separated_words[i], graph)    
+words = allwords(graph, 5, 5)
 
 disconnected_intervals = []
 for l1 in list(graph.keys()):
-
     intervals = []
     for l2 in graph[l1]:
         sd = []
-        for w in separated_words[int(l2)-1]:
+        for w in words[int(l2[0])]:
             s = np.arctan2(np.linalg.svd(w)[0][1][0], np.linalg.svd(w)[0][0][0])
             sd.append(s)
-
         eps = 2e-3
         for s in sd:
-            intervals.append(Interval(s - eps, s + eps, 0, letters[int(l1) - 1], [letters[int(l1) - 1]], np.array([int(int(l1)-1 == 0), int(int(l1)-1 == 1), int(int(l1)-1 == 2)])))
-
+            intervals.append(Interval(s - eps, s + eps, 0, letters[int(l1)], [letters[int(l1)]], np.array([int(int(l1) == 0), int(int(l1) == 1), int(int(l1) == 2)])))
     disconnected_intervals.append(DisconnectedInterval(intervals))
 
+# TODO Build reverse graph
 expansion = 1e-2
 for i in range(1):
     # Expand all of the disconnected intervals
@@ -55,14 +46,12 @@ for i in range(1):
         for interval in di.components:
             interval.e1 = (interval.e1 + expansion) % np.pi
             interval.e2 = (interval.e2 + expansion) % np.pi
-    
     contained = True
     for l1 in list(graph.keys()):
         for l2 in graph[l1]:
-            if not disconnected_intervals[int(l2)-1].contains_image(disconnected_intervals[int(l1)-1]):
+            if not disconnected_intervals[int(l2[0])].contains_image(disconnected_intervals[int(l1)]):
                 contained = False
             print(l1, 'contains', l2, contained)
-
     if contained:
         print('Found valid intervals!')
         break

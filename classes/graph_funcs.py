@@ -1,26 +1,20 @@
 import numpy as np
 
-def allwords(graph, n):
-    if n == 1:
-        return list(graph.keys())
+def allwords(graph, current_length, max_length):
+    '''Return a list of matrices representing words of length max_length sorted by starting letter'''
+    if current_length == 1:
+        states = list(graph.keys())
+        return zip(states, [np.identity(2) for i in range(len(states))])
     words = []
-    for word in allwords(graph, n-1):
-        for letter in graph[word[-1]]:
-            words.append(word + letter[0])
-    return words
-
-def matrize(words, graph):
-    for i in range(len(words)):
-        temp = words[i]
-        words[i] = np.identity(2)
-        for j in range(len(temp)):
-            words[i] =  words[i] @ letters[int(temp[j]) - 1]
-    return words
+    for word in allwords(graph, current_length-1, max_length):
+        for letter in graph[word[0][-1]]:
+            words.append((word[0] + letter[0], word[1] @ letter[1]))
+    if current_length < max_length:
+        return words
+    else:
+        return [[word[1] for word in words if word[0][0] == letter] for letter in list(graph.keys())]
 
 if __name__ == '__main__':
-    #graph = {'1': ['2', '3'], '2': ['1'], '3': ['1']}
-    #for i in range(30):
-    #    print('words of length ' + str(i+1) + ':', len(allwords(graph, i+1)))
 
     ### CREATE REPRESENTATION ###
     orders = [2, 3]
@@ -29,18 +23,14 @@ if __name__ == '__main__':
     for order in orders:
         theta = np.pi / order
         generators += [np.array([[np.cos(theta), -np.sin(theta)], [np.sin(theta), np.cos(theta)]])]
-
-    l = 2
-    C = np.array([[l, 0],
-                [0, 1/l]])
-
+    C = np.array([[2, 0],
+                [0, 1/2]])
     A, B = generators
-
     A = np.linalg.inv(C) @ A @ C
     B = C @ B @ np.linalg.inv(C)
 
     letters = [A, B, B @ B]
-    # graph = {'1' : ['2', '3'], '2' : ['1'], '3' : ['1']} # 1 corresponds to A, 2 to B, and 3 to B^-1
-    graph = {'1' : [('2', B), ('3', B @ B)], '2' : [('1', A)], '3' : [('1', A)]}
+    graph = {'0' : [('1', B), ('2', B @ B)], '1' : [('0', A)], '2' : [('0', A)]}
 
-    words = allwords(graph, 5)
+    words = allwords(graph, 5, 5)
+    print(words)

@@ -1,6 +1,7 @@
 from classes.intervals import *
 from classes.interval_funcs import *
 from classes.group_funcs import *
+from classes.graph_funcs import *
 
 ### CREATE REPRESENTATION ###
 orders = [2, 3]
@@ -20,46 +21,16 @@ A = np.linalg.inv(C) @ A @ C
 B = C @ B @ np.linalg.inv(C)
 
 letters = [A, B, B @ B]
-graph = {'1' : ['2', '3'], '2' : ['1'], '3' : ['1']} # 1 corresponds to A, 2 to B, and 3 to B^-1
+# graph = {'1' : ['2', '3'], '2' : ['1'], '3' : ['1']} # 1 corresponds to A, 2 to B, and 3 to B^-1
+graph = {'1' : [('2', B), ('3', B @ B)], '2' : [('1', A)], '3' : [('1', A)]}
 
 words = allwords(graph, 5)
 separated_words = [[], [], []]
 for word in words:
     separated_words[int(word[0])-1].append(word)
-print(separated_words)
-
-def matrize(words):
-    for i in range(len(words)):
-        temp = words[i]
-        words[i] = np.identity(2)
-        for j in range(len(temp)):
-            words[i] =  words[i] @ letters[int(temp[j]) - 1]
-    return words
 
 for i in range(len(separated_words)):
-    separated_words[i] = matrize(separated_words[i])    
-
-'''for w in separated_words:
-    print(w)
-    print()'''
-
-'''disconnected_intervals = []
-for i in range(len(separated_words)):
-    sd = []
-    for w in separated_words[i]:
-        s = np.arctan2(np.linalg.svd(w)[0][1][0], np.linalg.svd(w)[0][0][0])
-        sd.append(s)
-
-    print(sd)
-
-    intervals = []
-    eps = 2e-3
-    for s in sd:
-        #I = rp1_interval(s - eps, s + eps)
-        #theta2, theta1 = get_arc_params(I)
-        intervals.append(Interval(s - eps, s + eps, 0, 0, [], np.array([int(i == 0), int(i == 1), int(i == 2)])))
-    
-    disconnected_intervals.append(DisconnectedInterval(intervals))'''
+    separated_words[i] = matrize(separated_words[i], graph)    
 
 disconnected_intervals = []
 for l1 in list(graph.keys()):
@@ -76,7 +47,6 @@ for l1 in list(graph.keys()):
             intervals.append(Interval(s - eps, s + eps, 0, letters[int(l1) - 1], [letters[int(l1) - 1]], np.array([int(int(l1)-1 == 0), int(int(l1)-1 == 1), int(int(l1)-1 == 2)])))
 
     disconnected_intervals.append(DisconnectedInterval(intervals))
-
 
 expansion = 1e-2
 for i in range(1):

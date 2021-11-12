@@ -22,8 +22,10 @@ B = C @ B @ np.linalg.inv(C)
 
 letters = [A, B, B @ B]
 graph = {'0' : [('1', B), ('2', B @ B)], '1' : [('0', A)], '2' : [('0', A)]}
+#graph = {'0' : [('1', B)], '1' : [('0', A), ('2', B)], '2' : [('0', A)]}
 
 words = allwords(graph, 5, 5)
+print(len(words))
 
 disconnected_intervals = []
 for l1 in list(graph.keys()):
@@ -49,9 +51,9 @@ for i in range(1):
     contained = True
     for l1 in list(graph.keys()):
         for l2 in graph[l1]:
-            if not disconnected_intervals[int(l2[0])].contains_image(disconnected_intervals[int(l1)]):
+            if not disconnected_intervals[int(l2[0])].contains_image(disconnected_intervals[int(l1)], l2[1]):
                 contained = False
-            print(l1, 'contains', l2, contained)
+            #print(l1, 'contains', l2, contained)
     if contained:
         print('Found valid intervals!')
         break
@@ -62,11 +64,24 @@ fig, ax = plt.subplots(figsize=(5, 5))
 rp1 = Circle((0,0), 1.0, fill=False)
 ax.add_patch(rp1)
 
-for di in disconnected_intervals:
-    di.draw(ax)
+for i in range(len(disconnected_intervals)):
+    disconnected_intervals[i].draw(ax)
 
-for di in disconnected_intervals:
-    di.draw_image(ax)
+for l1 in list(graph.keys()):
+    for l2 in graph[l1]:
+        disconnected_intervals[int(l1)].draw_image(ax, l2[1])
+
+#disconnected_intervals[0].draw(ax)
+#disconnected_intervals[0].draw_image(ax, graph['0'][0][1]) # image of 0 under B
+
+#disconnected_intervals[1].draw(ax)
+#disconnected_intervals[1].draw_image(ax, graph['1'][0][1]) # image of 1 under A
+#disconnected_intervals[1].draw_image(ax, graph['1'][1][1]) # image of 1 under B
+
+#disconnected_intervals[2].draw(ax)
+#disconnected_intervals[2].draw_image(ax, graph['2'][0][1]) # image of 2 under A 
+
+# CONTAINMENTS NEEDED: B@1 in 0, A@0 in 1, B@2 in 1, A@0 in 2
 
 #plot data
 ax.set_xlim((-1.2, 1.2))

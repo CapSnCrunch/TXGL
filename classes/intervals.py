@@ -19,17 +19,19 @@ class Interval():
         self.nearest_interval_b = None
 
     def draw(self, ax):
-        # Draw the interval
+        '''Draw the interval'''
         theta2, theta1 = get_arc_params(rp1_interval((self.a - self.e1) % np.pi, (self.b + self.e2) % np.pi))
         ax.add_patch(Arc((0,0), 2., 2., theta1=theta1, theta2=theta2, color=self.color, linewidth=10))
 
-    def draw_image(self, ax):
-        # Draw image of the interval under all letters except inv(self.mat)
+    def draw_image(self, ax, mat):
+        '''Draw image of the interval under mat'''
         I = rp1_interval((self.a - self.e1) % np.pi, (self.b + self.e2) % np.pi)
-        for mat in self.letters:
+        '''for mat in self.letters:
             if not np.allclose(mat, np.linalg.inv(self.mat)):
                 theta2, theta1 = get_arc_params(mat @ I)
-                ax.add_patch(Arc((0,0), 2., 2., theta1=theta1, theta2=theta2, color='orange', linewidth=7))
+                ax.add_patch(Arc((0,0), 2., 2., theta1=theta1, theta2=theta2, color='orange', linewidth=7))'''
+        theta2, theta1 = get_arc_params(mat @ I)
+        ax.add_patch(Arc((0,0), 2., 2., theta1=theta1, theta2=theta2, color='orange', linewidth=7))
 
     def contains(self, other):
         '''Check if intervals contains another interval'''
@@ -65,7 +67,7 @@ class Interval():
         #d, c = get_arc_params(self.mat @ I)
         d, c = get_arc_params(mat @ I)
 
-        print(' ', b, a, d, c)
+        #print(' ', b, a, d, c)
 
         '''a, b = (self.a - self.e1) % ta, (self.b + self.e2) % ta
         c, d = (other.a - other.e1) % ta, (other.b + other.e2) % ta'''
@@ -84,12 +86,12 @@ class Interval():
                 return a < c and d < b
 
     def intersects(self, other):
-        # Check if interval intersects another interval
+        '''Check if interval intersects another interval'''
         return self.a < other.a < self.b or self.a < other.b < self.b
 
     def nearest_endpoints(self, intervals):
-        # Find the intervals which are closest to self.a and self.b and assign them to
-        # nearest_interval_a and nearest_interval_b respectively for later use in expansion
+        '''Find the intervals which are closest to self.a and self.b and assign them to
+            nearest_interval_a and nearest_interval_b respectively for later use in expansion'''
         a, b = (self.a - self.e1) % np.pi, (self.b + self.e2) % np.pi
         searching = True
         eps = 1e-5
@@ -112,16 +114,19 @@ class DisconnectedInterval():
         self.components = components
 
     def draw(self, ax):
+        '''Draw the disconnected interval'''
         for comp in self.components:
             comp.draw(ax)
 
-    def draw_image(self, ax):
+    def draw_image(self, ax, mat):
+        '''Draw the image of disconnected interval under mat'''
         for comp in self.components:
-            comp.draw_image(ax)
+            comp.draw_image(ax, mat)
 
     def combine(self):
         '''Combine / reduce intervals if they are overlapping
             (assumes that all intervals have the same name, mat, color) '''
+        # ASSUMES INTERVALS ARE SORTED IN A CLOCKWISE ORDER
         '''for i in range(len(self.components)):
             comp1 = self.components[i]
             comp2 = self.components[(i+1) % len(self.components)]
@@ -155,13 +160,14 @@ class DisconnectedInterval():
         return True
     
     def contains_image(self, other, mat):
+        '''Check if mat @ other is contained in self'''
         self.combine()
         other.combine()
         for comp2 in other.components:
             contained = False
             for comp1 in self.components:
                 if comp1.contains_image(comp2, mat):
-                    print(' component contained')
+                    #print(' component contained')
                     contained = True
                     break
             if not contained:
@@ -169,7 +175,8 @@ class DisconnectedInterval():
         return True
         
     def sort(self):
-        #TODO sort the intervals in order from 'left to right'
+        # TODO sort the intervals in a clockwise order
+        # Currently we assume intervals are sorted in order to combine
         pass
 
 if __name__ == '__main__':

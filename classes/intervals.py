@@ -21,7 +21,7 @@ class Interval():
     def draw(self, ax):
         '''Draw the interval'''
         theta2, theta1 = get_arc_params(rp1_interval((self.a - self.e1) % np.pi, (self.b + self.e2) % np.pi))
-        ax.add_patch(Arc((0,0), 2., 2., theta1=theta1, theta2=theta2, color=self.color, linewidth=10))
+        ax.add_patch(Arc((0,0), 2., 2., theta1 = theta1, theta2 = theta2, color = self.color, linewidth=10))
 
     def draw_image(self, ax, mat):
         '''Draw image of the interval under mat'''
@@ -31,7 +31,7 @@ class Interval():
                 theta2, theta1 = get_arc_params(mat @ I)
                 ax.add_patch(Arc((0,0), 2., 2., theta1=theta1, theta2=theta2, color='orange', linewidth=7))'''
         theta2, theta1 = get_arc_params(mat @ I)
-        ax.add_patch(Arc((0,0), 2., 2., theta1=theta1, theta2=theta2, color='orange', linewidth=7))
+        ax.add_patch(Arc((0,0), 2., 2., theta1 = theta1, theta2 = theta2, color = (self.color + 1)/2, linewidth = 7))
 
     def contains(self, other):
         '''Check if intervals contains another interval'''

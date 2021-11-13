@@ -1,3 +1,5 @@
+import numpy as np
+
 total = 0
 for i in range(10):
     print(i)
@@ -15,3 +17,5 @@ while index < len(a):
         index -= 1
     index += 1
     print(a)
+
+print((np.array([0,0,1]) + 1)/2)

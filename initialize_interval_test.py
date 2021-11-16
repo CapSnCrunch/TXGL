@@ -21,10 +21,38 @@ A = np.linalg.inv(C) @ A @ C
 B = C @ B @ np.linalg.inv(C)
 
 letters = [A, B, B @ B]
-graph = {'0' : [('1', B), ('2', B @ B)], '1' : [('0', A)], '2' : [('0', A)]}
+#graph = {'0' : [('1', B), ('1', B @ B)], '1' : [('0', A)]}
+#graph = {'0' : [('1', B), ('2', B @ B)], '1' : [('0', A)], '2' : [('0', A)]}
 #graph = {'0' : [('1', B)], '1' : [('0', A), ('2', B)], '2' : [('0', A)]}
 
-words = allwords(graph, 5, 5)
+# Triangle Group <a, b, c | a^2 = b^2 = c^2 = 1, (ab)^3 = (cb)^3 = (ac)^4 = 1>
+A = np.array([[ 0.923879532511287, -0.217284326304659],
+               [-0.673986071141597, -0.923879532511287]])
+B = np.array([[0.,                1.219308768593441],
+               [0.820136806818482, 0.               ]])
+C = np.array([[ 0.923879532511287,  0.21728432630466 ],
+               [ 0.673986071141597, -0.923879532511286]])
+graph = {'0': [('1', A), ('2', B), ('3', C)],
+            '1': [('4', B), ('5', C)],
+            '2': [('6', A), ('7', C)],
+            '3': [('8', A), ('9', B)],
+            '4': [('10', A), ('7', C)],
+            '5': [('11', A), ('9', B)],
+            '6': [('1', B), ('5', C)],
+            '7': [('8', A), ('12', B)],
+            '8': [('4', B), ('13', C)],
+            '9': [('6', A), ('12', C)],
+            '10': [('14', C)],
+            '11': [('4', B), ('15', C)],
+            '12': [('16', A)],
+            '13': [('16', A), ('9', B)],
+            '14': [('11', A), ('12', B)],
+            '15': [('17', B)],
+            '16': [('10', B), ('13', C)],
+            '17': [('10', A), ('12', C)]}
+
+words = allwords(graph, 7, 7)
+print(len(words))
 
 '''eps = 2e-3
 disconnected_intervals = []
@@ -42,7 +70,8 @@ for i in range(len(words)):
     intervals = []
     for j in range(len(words[i])):
         s = np.arctan2(np.linalg.svd(words[i][j])[0][1][0], np.linalg.svd(words[i][j])[0][0][0])
-        intervals.append(Interval(s - eps, s + eps, 0, 0, [], np.array([int(i == 0), int(i == 1)/2, int(i == 2)])))
+        #intervals.append(Interval(s - eps, s + eps, 0, 0, [], np.array([int(i == 0), int(i == 1)/2, int(i == 2)])))
+        intervals.append(Interval(s - eps, s + eps, 0, 0, [], np.array([np.random.uniform(0,1), np.random.uniform(0,1), np.random.uniform(0,1)])))
     disconnected_intervals.append(DisconnectedInterval(intervals))
 
 # TODO Build reverse graph

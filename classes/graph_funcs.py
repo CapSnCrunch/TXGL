@@ -4,14 +4,15 @@ def allwords(graph, current_length, max_length):
     '''Return a list of matrices representing words of length max_length sorted by starting letter'''
     if current_length == 1:
         states = list(graph.keys())
-        return zip(states, [np.identity(2) for i in range(len(states))])
+        return zip([states], [np.identity(2) for i in range(len(states))])
     words = []
     for word in allwords(graph, current_length-1, max_length):
         for letter in graph[word[0][-1]]:
-            words.append((word[0] + letter[0], word[1] @ letter[1]))
+            words.append((word[0] + [letter[0]], word[1] @ letter[1]))
     if current_length < max_length:
         return words
     else:
+        print(words)
         print([[word[0] for word in words if word[0][0] == letter] for letter in list(graph.keys())])
         return [[word[1] for word in words if word[0][0] == letter] for letter in list(graph.keys())]
 

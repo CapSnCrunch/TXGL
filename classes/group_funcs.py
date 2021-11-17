@@ -52,7 +52,7 @@ def cyclic_free_product_graph(orders):
 
 def cyclic_free_product_generators(orders):
     # Create a collection generators for a cyclic free product group with the given orders
-    # TODO This doesnt actually work (maybe try conjugating them but we wont be sure)
+    # TODO This doesnt actually work (conjugate them by some matrix in SL(2,R)
     generators = []
     for order in orders:
         theta = 2*np.pi / order

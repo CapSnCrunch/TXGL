@@ -1,6 +1,6 @@
 import numpy as np
 
-def allwords(graph, current_length, max_length):
+"""def allwords(graph, current_length, max_length):
     '''Return a list of matrices representing words of length max_length sorted by starting letter'''
     if current_length == 1:
         states = list(graph.keys())
@@ -13,6 +13,21 @@ def allwords(graph, current_length, max_length):
         return words
     else:
         print(words)
+        print([[word[0] for word in words if word[0][0] == letter] for letter in list(graph.keys())])
+        return [[word[1] for word in words if word[0][0] == letter] for letter in list(graph.keys())]"""
+
+def allwords(graph, current_length, max_length):
+    '''Return a list of matrices representing words of length max_length sorted by starting letter'''
+    if current_length == 1:
+        states = [[s] for s in list(graph.keys())]
+        return zip(states, [np.identity(2) for i in range(len(states))])
+    words = []
+    for word in allwords(graph, current_length-1, max_length):
+        for letter in list(graph[word[0][-1]].keys()):
+            words.append((word[0] + [letter], word[1] @ graph[word[0][-1]][letter]))
+    if current_length < max_length:
+        return words
+    else:
         print([[word[0] for word in words if word[0][0] == letter] for letter in list(graph.keys())])
         return [[word[1] for word in words if word[0][0] == letter] for letter in list(graph.keys())]
 
@@ -32,7 +47,7 @@ if __name__ == '__main__':
     B = C @ B @ np.linalg.inv(C)
 
     letters = [A, B, B @ B]
-    graph = {'0' : [('1', B), ('2', B @ B)], '1' : [('0', A)], '2' : [('0', A)]}
+    graph = {0 : {1: B, 2: B @ B}, 1 : {0: A}, 2: {0 : A}}
 
     words = allwords(graph, 5, 5)
     print(words)

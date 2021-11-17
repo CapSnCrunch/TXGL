@@ -30,7 +30,10 @@ class Interval():
             if not np.allclose(mat, np.linalg.inv(self.mat)):
                 theta2, theta1 = get_arc_params(mat @ I)
                 ax.add_patch(Arc((0,0), 2., 2., theta1=theta1, theta2=theta2, color='orange', linewidth=7))'''
-        theta2, theta1 = get_arc_params(mat @ I)
+        if np.linalg.det(mat) < 0:
+            theta2, theta1 = sorted(get_arc_params(mat @ I), reverse = True)
+        else:
+            theta2, theta1 = get_arc_params(mat @ I)
         ax.add_patch(Arc((0,0), 2., 2., theta1 = theta1, theta2 = theta2, color = (self.color + 1)/2, linewidth = 7))
 
     def contains(self, other):
@@ -135,6 +138,7 @@ class DisconnectedInterval():
                 comp1.b = max(comp1.b, comp2.b)'''
         
         index = 0
+        # TODO FIX (infinite loop when A, B not conjugated)
         while index < len(self.components):
             comp1 = self.components[index]
             comp2 = self.components[(index + 1) % len(self.components)]

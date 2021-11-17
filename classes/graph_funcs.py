@@ -31,6 +31,21 @@ def allwords(graph, current_length, max_length):
         print([[word[0] for word in words if word[0][0] == letter] for letter in list(graph.keys())])
         return [[word[1] for word in words if word[0][0] == letter] for letter in list(graph.keys())]
 
+def generate_graph(orders, mats):
+    n, m = orders
+    A, B = mats
+    graph = {0 : {1 : B}, 1 : {0 : A}}
+    for i in range(m - 2):
+        graph[len(list(graph.keys())) - 1][len(list(graph.keys()))] = B
+        graph[len(list(graph.keys()))] = {0: A}
+    for i in range(n - 2):
+        if i == 0:
+            graph[0][len(list(graph.keys()))] = A
+        else:
+            graph[len(list(graph.keys())) - 1][len(list(graph.keys()))] = A
+        graph[len(list(graph.keys()))-1][1] = B
+    return graph
+
 if __name__ == '__main__':
 
     ### CREATE REPRESENTATION ###
@@ -51,3 +66,5 @@ if __name__ == '__main__':
 
     words = allwords(graph, 5, 5)
     print(words)
+
+    print(generate_graph([2, 4], ['A', 'B']))

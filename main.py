@@ -38,13 +38,6 @@ B = np.array([[0.,                1.219308768593441],
 C = np.array([[ 0.923879532511287,  0.21728432630466 ],
                [ 0.673986071141597, -0.923879532511286]])
 
-print(A@A)
-print(B@B)
-print(C@C)
-print(A@B@A@B@A@B)
-print(C@B@C@B@C@B)
-print(A@C@A@C@A@C@A@C)
-
 graph = {0: {},
             1: {4: B, 5: C},
             2: {6: A, 7: C},
@@ -98,9 +91,9 @@ for i in range(len(words)):
     disconnected_intervals.append(DisconnectedInterval(intervals))
 
 # TODO Build reverse graph
-expansion = 1e-3
+expansion = 1e-4
 expand = []
-for i in range(100):
+for i in range(200):
     print(i)
     # Expand all of the disconnected intervals
     for di in expand:

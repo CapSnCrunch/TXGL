@@ -67,8 +67,11 @@ class Interval():
 
         # Find the angles vectors occur at in order to compare
         b, a = get_arc_params(rp1_interval(self.a - self.e1, self.b + self.e2))
-        #d, c = get_arc_params(self.mat @ I)
-        d, c = get_arc_params(mat @ I)
+        
+        if np.linalg.det(mat) < 1:
+            c, d = get_arc_params(mat @ I)
+        else:
+            d, c = get_arc_params(mat @ I)
 
         #print(' ', b, a, d, c)
 

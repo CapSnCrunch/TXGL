@@ -30,16 +30,28 @@ rp1 = Circle((0, 0), 1.0, fill = False)
 #ax1.add_patch(rp1)
 
 view = 0
+# 13, 14 acts weird
 for i in range(n):
     intervals[i].draw(ax1)
 
 for i in range(n):
     I = rp1_interval(intervals[i].a % np.pi, intervals[i].b % np.pi)
+    a, b = get_arc_params(mat @ I)
     if np.linalg.det(mat) < 0:
         theta2, theta1 = sorted(get_arc_params(mat @ I), reverse = True)
+        #if theta1 < theta2 and np.sign(theta1) != np.sign(theta2):
+        #    theta1 -= 180
+        #    print(i, theta1, theta2)
     else:
         theta2, theta1 = get_arc_params(mat @ I)
+    if a > b:
+        print(i)
+        print(a, b)
+    #print(rp1_to_s1(mat @ I))
+    #print(theta1 % 360, theta2 % 360)
     ax2.add_patch(Arc((0,0), 2., 2., theta1 = theta1, theta2 = theta2, color = intervals[i].color, linewidth = 10))
+
+ax2.add_patch(Arc((0,0), 2., 2., theta1 = -179, theta2 = 178, color = "black", linewidth = 10))
 
 # Plot data
 ax1.set_xlim((-1.1, 1.1))

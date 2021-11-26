@@ -12,6 +12,7 @@ def rp1_to_s1(v):
 def get_arc_params(interval):
     """map a pair of points in R^2 - {0} to a pair of circle angles"""
     x, y = rp1_to_s1(interval)
+    #return np.arctan2(y,x) * 360 / (2*np.pi)
     return np.arctan2(y,x) * 180 / np.pi
 
 def rp1_interval(theta1, theta2):

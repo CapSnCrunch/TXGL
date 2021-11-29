@@ -62,6 +62,8 @@ class Interval():
         '''Check if mat @ other contained in self'''
         ta = 360
 
+        #print(' ', self.b, self.a, other.b, other.a)
+
         # Get interval we want to take the image of as a pair of vectors
         I = rp1_interval(other.a - other.e1, other.b + other.e2)
 

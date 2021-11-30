@@ -4,16 +4,18 @@ from classes.interval_funcs import *
 from classes.group_funcs import *
 from classes.graph_funcs import *
 
-# A in <a, b, c | a^2 = b^2 = c^2 = 1, (ab)^3 = (cb)^3 = (ac)^4 = 1>
+# A, B in <a, b, c | a^2 = b^2 = c^2 = 1, (ab)^3 = (cb)^3 = (ac)^4 = 1>
 mat = np.array([[ 0.923879532511287, -0.217284326304659],
                [-0.673986071141597, -0.923879532511287]])
+mat = np.array([[0.70710678, -1.59099026],
+                [0.31426968, 0.70710678]])
 
 # A, B in <a,b | a^2 = b^3 = 1>
-mat = np.array([[0, -1], [1, 0]])
-mat = np.array([[6.123234e-17, -2.500000e-01],
-                [4.000000e+00, 6.123234e-17]])
-'''mat = np.array([[0.5, -3.46410162],
-                [0.21650635, 0.5]])'''
+#mat = np.array([[0, -1], [1, 0]])
+#mat = np.array([[6.123234e-17, -2.500000e-01],
+#                [4.000000e+00, 6.123234e-17]])
+#mat = np.array([[0.5, -3.46410162],
+#                [0.21650635, 0.5]])
 
 n = 200
 delta = np.pi / n

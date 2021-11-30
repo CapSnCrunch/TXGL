@@ -11,7 +11,7 @@ for order in orders:
     theta = np.pi / order
     generators += [np.array([[np.cos(theta), -np.sin(theta)], [np.sin(theta), np.cos(theta)]])]
 
-l = 2
+l = 1.5
 C = np.array([[l, 0],
               [0, 1/l]])
 
@@ -19,6 +19,8 @@ A, B = generators
 
 A = np.linalg.inv(C) @ A @ C
 B = C @ B @ np.linalg.inv(C)
+
+print(A, B)
 
 # For order [2, 3]
 #graph = {0: {1: B}, 1: {0: A, 2: B}, 2: {0 : A}}
@@ -29,6 +31,7 @@ B = C @ B @ np.linalg.inv(C)
 #graph = {0: {1: B}, 1: {0: A, 2: B}, 2: {0: A, 3: B}, 3: {0: A}}
 
 graph = generate_graph(orders, [A, B])
+print(A, B)
 
 # Triangle Group <a, b, c | a^2 = b^2 = c^2 = 1, (ab)^3 = (cb)^3 = (ac)^4 = 1>
 A = np.array([[ 0.923879532511287, -0.217284326304659],
@@ -77,7 +80,7 @@ graph = {0: {},
              17: {10: A, 12: C}}'''
 
 words = allwords(graph, 5, 5)
-print(len(words))
+#print(len(words))
 
 eps = 2e-4
 disconnected_intervals = []
@@ -94,7 +97,7 @@ for i in range(len(words)):
 expansion = 1e-4
 expand = []
 for i in range(200):
-    print(i)
+    #print(i)
     # Expand all of the disconnected intervals
     for di in expand:
         for interval in di.components:

@@ -3,9 +3,9 @@ import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.patches import Circle, Arc
 
-from interval_funcs import *
-from group_funcs import *
-from intervals import Interval
+from classes.interval_funcs import *
+from classes.group_funcs import *
+from classes.intervals import Interval
 
 # SEPARATE SEARCH CODE FROM CHECKING CONTAINMENT CODE
 

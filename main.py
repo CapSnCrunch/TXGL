@@ -4,7 +4,7 @@ from classes.group_funcs import *
 from classes.graph_funcs import *
 
 ### CREATE REPRESENTATION ###
-orders = [2, 9]
+orders = [2, 9] # Doesn't work for [3, m]
 
 generators = []
 for order in orders:

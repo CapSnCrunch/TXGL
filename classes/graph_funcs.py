@@ -28,7 +28,7 @@ def allwords(graph, current_length, max_length):
     if current_length < max_length:
         return words
     else:
-        print([[word[0] for word in words if word[0][0] == letter] for letter in list(graph.keys())])
+        #print([[word[0] for word in words if word[0][0] == letter] for letter in list(graph.keys())])
         return [[word[1] for word in words if word[0][0] == letter] for letter in list(graph.keys())]
 
 def generate_graph(orders, mats):

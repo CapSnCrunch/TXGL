@@ -5,6 +5,7 @@ from classes.interval_funcs import *
 
 class Interval():
     def __init__(self, a, b, name, mat, letters, color):
+        # TODO We can probably get rid of e1, e2, mat, and letters
         self.a = a % np.pi
         self.b = b % np.pi
         self.e1 = 0
@@ -31,7 +32,7 @@ class Interval():
                 theta2, theta1 = get_arc_params(mat @ I)
                 ax.add_patch(Arc((0,0), 2., 2., theta1=theta1, theta2=theta2, color='orange', linewidth=7))'''
         if np.linalg.det(mat) < 0:
-            theta2, theta1 = sorted(get_arc_params(mat @ I), reverse = True)
+            theta1, theta2 = get_arc_params(mat @ I)
         else:
             theta2, theta1 = get_arc_params(mat @ I)
         ax.add_patch(Arc((0,0), 2., 2., theta1 = theta1, theta2 = theta2, color = (self.color + 1)/2, linewidth = 7))
@@ -75,10 +76,6 @@ class Interval():
         else:
             d, c = get_arc_params(mat @ I)
 
-        #print(' ', b, a, d, c)
-
-        '''a, b = (self.a - self.e1) % ta, (self.b + self.e2) % ta
-        c, d = (other.a - other.e1) % ta, (other.b + other.e2) % ta'''
         if a > b:
             if c > d:
                 return d < b and a < c
@@ -93,9 +90,9 @@ class Interval():
             else:    
                 return a < c and d < b
 
-    def intersects(self, other):
-        '''Check if interval intersects another interval'''
-        return self.a < other.a < self.b or self.a < other.b < self.b
+    def intersects(self, other, reach = 0):
+        '''Check if interval intersects another interval with +- reach padding'''
+        return (self.a - reach) < other.a < (self.b + reach) or (self.a - reach) < other.b < (self.b + reach)
 
     def nearest_endpoints(self, intervals):
         '''Find the intervals which are closest to self.a and self.b and assign them to
@@ -120,6 +117,7 @@ class Interval():
 class DisconnectedInterval():
     def __init__(self, components = []):
         self.components = components
+        #self.sort()
 
     def draw(self, ax):
         '''Draw the disconnected interval'''
@@ -131,23 +129,18 @@ class DisconnectedInterval():
         for comp in self.components:
             comp.draw_image(ax, mat)
 
-    def combine(self):
+    def combine(self, reach = 0):
         '''Combine / reduce intervals if they are overlapping
-            (assumes that all intervals have the same name, mat, color) '''
-        # ASSUMES INTERVALS ARE SORTED IN A CLOCKWISE ORDER
-        '''for i in range(len(self.components)):
-            comp1 = self.components[i]
-            comp2 = self.components[(i+1) % len(self.components)]
-            if comp1.intersects(comp2):
-                comp1.a = min(comp1.a, comp2.a)
-                comp1.b = max(comp1.b, comp2.b)'''
-        
-        index = 0
-        # TODO FIX (infinite loop when A, B not conjugated)
-        while index < len(self.components):
+            (assumes that all intervals have the same name, mat, color)
+            Will combine intervals if the gap between them is at most 'reach' '''
+
+        self.sort() # Sort components into clockwise order
+
+        index = 0 # TODO FIX (infinite loop when A, B not conjugated)
+        while index < len(self.components) and len(self.components) > 1:
             comp1 = self.components[index]
             comp2 = self.components[(index + 1) % len(self.components)]
-            if comp1.intersects(comp2):
+            if comp1.intersects(comp2, reach):
                 comp1.a = min(comp1.a, comp2.a)
                 comp1.b = max(comp1.b, comp2.b)
                 self.components = self.components[:index+1] + self.components[index+2:]
@@ -176,7 +169,6 @@ class DisconnectedInterval():
             contained = False
             for comp1 in self.components:
                 if comp1.contains_image(comp2, mat):
-                    #print(' component contained')
                     contained = True
                     break
             if not contained:
@@ -184,9 +176,7 @@ class DisconnectedInterval():
         return True
         
     def sort(self):
-        # TODO sort the intervals in a clockwise order
-        # Currently we assume intervals are sorted in order to combine
-        pass
+        self.components = sorted(self.components, key = lambda comp: comp.a)
 
 if __name__ == '__main__':
     i1 = Interval(0, 0.2, 0, 0, [], np.array([1,0,0]))

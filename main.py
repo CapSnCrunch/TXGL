@@ -76,73 +76,26 @@ for i in range(len(words)):
 
 ### LINEAR EXPANSION SEARCH ###
 # Linearly expand intervals which do not fully contain the images they need to by some amount
-expand = [] # List of which intervals need to be expanded (ones which don't fully contain images)
-expansion = 5e-4 # Amount to expand intervals by
-for i in range(75):
-    # Expand all of the disconnected intervals
-    for di in expand:
-        for interval in di.components:
-            interval.e1 = (interval.e1 + expansion) % np.pi
-            interval.e2 = (interval.e2 + expansion) % np.pi
-    failed = 0
-    expand = [] # Keep track of which intervals don't contain the images they need to
-    for l1 in list(graph.keys()):
-        for l2 in graph[l1]:
-            if not disconnected_intervals[l1].contains_image(disconnected_intervals[l2], graph[l1][l2]):
-                failed += 1
-                if disconnected_intervals[l1] not in expand:
-                    expand.append(disconnected_intervals[l1])
-    
-    print(i, failed)
-
-    fig, ax = plt.subplots(figsize = (5, 5), facecolor=((214/255, 245/255, 174/255)))
-
-    # RP1
-    rp1 = Circle((0, 0), 1.0, fill = False)
-    ax.add_patch(rp1)
-
-    for j in range(len(disconnected_intervals)):
-        disconnected_intervals[j].combine()
-        disconnected_intervals[j].draw(ax)
-
-    for l1 in list(graph.keys()):
-        for l2 in graph[l1]:
-            disconnected_intervals[l2].draw_image(ax, graph[l1][l2])
-
-    # Plot data
-    ax.set_facecolor((1.0, 0.47, 0.42))
-    ax.set_xlim((-1.2, 1.2))
-    ax.set_ylim((-1.2, 1.2))
-    ax.axis('off')
-    ax.set_aspect('equal')
-
-    plt.savefig(fname = 'txgl/gif2/frame'+str(i)+'.png')
-    plt.clf()
-    plt.close()
-
-    if not failed:
-        print('Found valid intervals!')
-        break
-
-### PATCH SEARCH ###
-# Extend a disconnected interval exactly the amount required by adding components around the images it must contain and combining
-# delta = 3e-4
-# for i in range(10):
+# expand = [] # List of which intervals need to be expanded (ones which don't fully contain images)
+# expansion = 5e-4 # Amount to expand intervals by
+# for i in range(75):
+#     # Expand all of the disconnected intervals
+#     for di in expand:
+#         for interval in di.components:
+#             interval.e1 = (interval.e1 + expansion) % np.pi
+#             interval.e2 = (interval.e2 + expansion) % np.pi
 #     failed = 0
+#     expand = [] # Keep track of which intervals don't contain the images they need to
 #     for l1 in list(graph.keys()):
 #         for l2 in graph[l1]:
-#             # Create a new component around each component which was not contained
-#             for comp in disconnected_intervals[l2].components:
-#                 if not disconnected_intervals[l1].contains_image(DisconnectedInterval([comp]), graph[l1][l2]):
-#                     failed += 1
-#                     color = disconnected_intervals[l1].components[0].color
-#                     x, y = graph[l1][l2] @ rp1_interval((comp.a - comp.e1) % np.pi, (comp.b + comp.e2) % np.pi)
-#                     b, a = np.arctan2(y,x)
-#                     disconnected_intervals[l1].components.append(Interval(a - delta, b + delta, 0, 0, [], color))
-#             disconnected_intervals[l1].combine(5e-4)
+#             if not disconnected_intervals[l1].contains_image(disconnected_intervals[l2], graph[l1][l2]):
+#                 failed += 1
+#                 if disconnected_intervals[l1] not in expand:
+#                     expand.append(disconnected_intervals[l1])
+    
 #     print(i, failed)
 
-#     fig, ax = plt.subplots(figsize = (5, 5))
+#     fig, ax = plt.subplots(figsize = (5, 5), facecolor=((214/255, 245/255, 174/255)))
 
 #     # RP1
 #     rp1 = Circle((0, 0), 1.0, fill = False)
@@ -155,6 +108,61 @@ for i in range(75):
 #     for l1 in list(graph.keys()):
 #         for l2 in graph[l1]:
 #             disconnected_intervals[l2].draw_image(ax, graph[l1][l2])
+
+#     # Plot data
+#     ax.set_facecolor((1.0, 0.47, 0.42))
+#     ax.set_xlim((-1.2, 1.2))
+#     ax.set_ylim((-1.2, 1.2))
+#     ax.axis('off')
+#     ax.set_aspect('equal')
+
+#     plt.savefig(fname = 'txgl/gif2/frame'+str(i)+'.png')
+#     plt.clf()
+#     plt.close()
+
+#     if not failed:
+#         print('Found valid intervals!')
+#         break
+
+### PATCH SEARCH ###
+# Extend a disconnected interval exactly the amount required by adding components around the images it must contain and combining
+delta = 3e-5 # Extra space just over the image
+for i in range(25):
+    failed = 0
+    for l1 in list(graph.keys()):
+        for l2 in graph[l1]:
+            # Create a new component around each component which was not contained
+            for comp in disconnected_intervals[l2].components:
+                if not disconnected_intervals[l1].contains_image(DisconnectedInterval([comp]), graph[l1][l2]):
+                    failed += 1
+                    color = disconnected_intervals[l1].components[0].color
+                    x, y = graph[l1][l2] @ rp1_interval((comp.a - comp.e1) % np.pi, (comp.b + comp.e2) % np.pi)
+                    b, a = np.arctan2(y,x)
+                    disconnected_intervals[l1].components.append(Interval(a - delta, b + delta, 0, 0, [], color))
+            disconnected_intervals[l1].combine(5e-3)
+    print('Iteration', i, '  Number of failed containments', failed)
+
+    for i in range(len(disconnected_intervals)):
+        disconnected_intervals[i].combine()
+        print(f"  Components: {len(disconnected_intervals[i].components)}")
+        #for comp in disconnected_intervals[i].components:
+        #    print(comp.a, comp.b)
+        #print()
+
+    # DRAW FIGURES FOR GIF
+    # fig, ax = plt.subplots(figsize = (5, 5))
+
+    # # RP1
+    # rp1 = Circle((0, 0), 1.0, fill = False)
+    # ax.add_patch(rp1)
+
+    # for j in range(len(disconnected_intervals)):
+    #     disconnected_intervals[j].combine()
+    #     disconnected_intervals[j].draw(ax)
+
+    # for l1 in list(graph.keys()):
+    #     for l2 in graph[l1]:
+    #         disconnected_intervals[l2].draw_image(ax, graph[l1][l2])
 
     # Plot data
     '''ax.set_xlim((-1.2, 1.2))
@@ -179,7 +187,7 @@ ax.add_patch(rp1)
 for i in range(len(disconnected_intervals)):
     disconnected_intervals[i].combine()
     disconnected_intervals[i].draw(ax)
-    print(f"Components: {len(disconnected_intervals[i].components)}")
+    print(f"Components:   {len(disconnected_intervals[i].components)}")
     #for comp in disconnected_intervals[i].components:
     #    print(comp.a, comp.b)
     #print()

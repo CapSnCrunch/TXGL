@@ -117,6 +117,10 @@ class Interval():
 class DisconnectedInterval():
     def __init__(self, components = []):
         self.components = components
+        if len(components) > 0:
+            self.color = components[0].color
+        else:
+            self.color = (0, 0, 255)
         #self.sort()
 
     def draw(self, ax):

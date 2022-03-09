@@ -122,7 +122,7 @@ def iterate():
 
 # MAIN LOOP
 iteration = 0
-selected = 3
+selected = -1
 failed = {}
 print()
 print('Press any key to run the first iteration')
@@ -138,6 +138,11 @@ while True:
             iteration += 1
             print()
             print('Press any key to run iteration', iteration)
+        if event.type == pygame.MOUSEBUTTONDOWN:
+            cursor = list(pygame.mouse.get_pos())
+            if width * 0.04 < cursor[0] < width * 0.11 and height * 0.05 < cursor[1] < height * 0.95:
+                dy = int((height * 0.95) / len(disconnected_intervals))
+                selected = (cursor[1] - dy / 2) // dy
 
     # DRAW DEBUG WINDOW
     win.fill((255, 255, 255))
@@ -162,6 +167,6 @@ while True:
                 pygame.draw.line(win, disconnected_intervals[i].color * 255, (start, y), (width * 0.95, y), 10)
                 pygame.draw.line(win, disconnected_intervals[i].color * 255, (width * 0.15, y), (np.ceil(end), y), 10)
 
-        y += int((height - height * 0.05) / len(disconnected_intervals))
+        y += int((height * 0.95) / len(disconnected_intervals))
 
     pygame.display.update()

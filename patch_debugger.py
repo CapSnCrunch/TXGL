@@ -4,11 +4,15 @@ from classes.intervals import *
 from classes.interval_funcs import *
 from classes.group_funcs import *
 from classes.graph_funcs import *
+from colors import colors
 
 ### CREATE DEBUGGER WINDOW ###
-width, height = 600, 600
+width, height = 600, 400
 win = pygame.display.set_mode((width, height))
 pygame.display.set_caption('TXGL Patch Search Debugger')
+
+pygame.font.init()
+font = pygame.font.SysFont('Roboto', 15)
 
 ### CREATE REPRESENTATION ###
 orders = [2, 3] # Doesn't work for [3, m]
@@ -74,8 +78,9 @@ eps = 2e-4
 disconnected_intervals = []
 for i in range(len(words)):
     intervals = []
-    color = np.array([np.random.uniform(0,0.5), np.random.uniform(0,0.5), np.random.uniform(0,0.5)])
+    #color = np.array([np.random.uniform(0,0.5), np.random.uniform(0,0.5), np.random.uniform(0,0.5)])
     #color = np.array([0.9*(i==0), 0.9*(i==1), 0.9*(i==2)])
+    color = colors[i]
     for j in range(len(words[i])):
         s = np.arctan2(np.linalg.svd(words[i][j])[0][1][0], np.linalg.svd(words[i][j])[0][0][0])
         intervals.append(Interval(s - eps, s + eps, 0, 0, [], color))
@@ -87,15 +92,18 @@ for i in range(len(words)):
 def iterate():
     ### PATCH SEARCH ###
     # Extend a disconnected interval exactly the amount required by adding components around the images it must contain and combining
-    delta = 3e-5 # Extra space just over the image
+    delta = 3e-4 # Extra space just over the image
 
-    failed = 0
+    failed = {}
+    # Look at a particular L1 disconnected interval
     for l1 in list(graph.keys()):
+        # Look at each disconnected interval L2 which must be contained in L1
+        failed[l1] = 0
         for l2 in graph[l1]:
             # Create a new component around each component which was not contained
             for comp in disconnected_intervals[l2].components:
                 if not disconnected_intervals[l1].contains_image(DisconnectedInterval([comp]), graph[l1][l2]):
-                    failed += 1
+                    failed[l1] += 1
                     color = disconnected_intervals[l1].components[0].color
                     x, y = graph[l1][l2] @ rp1_interval((comp.a - comp.e1) % np.pi, (comp.b + comp.e2) % np.pi)
                     b, a = np.arctan2(y,x)
@@ -109,26 +117,40 @@ def iterate():
            print('    ', comp.a, comp.b)
         print()
     
-    print('Number of failed containments', failed)
-    
+    print('Number of failed containments', sum(failed.values()))
+    return failed
+
 # MAIN LOOP
 iteration = 0
+selected = 3
+failed = {}
+print()
+print('Press any key to run the first iteration')
 while True:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             pygame.quit()
         if event.type == pygame.KEYDOWN:
             print()
-            print('Running ... ')
             print('Iteration', iteration)
-            iterate()
+            print('Running ... ')
+            failed = iterate()
             iteration += 1
+            print()
+            print('Press any key to run iteration', iteration)
 
     # DRAW DEBUG WINDOW
     win.fill((255, 255, 255))
 
     y = int(height * 0.05)
     for i in range(len(disconnected_intervals)):
+        win.blit(font.render(str(i), False, (0, 0, 0)), (width * 0.02, y - 3))
+        if i == selected:
+            pygame.draw.line(win, (230, 230, 230), (width * 0.04, y), (width * 0.11, y), 20)
+        pygame.draw.line(win, disconnected_intervals[i].color * 255, (width * 0.05, y), (width * 0.1, y), 10)
+        if failed != {}:
+            win.blit(font.render(str(failed[i]), False, (255, 0, 0)), (width * 0.12, y - 3))
+
         pygame.draw.line(win, (200, 200, 200), (width * 0.15, y), (width * 0.95, y), 2)
         for comp in disconnected_intervals[i].components:
             start = ((width * 0.8) / np.pi) * comp.a + width * 0.15

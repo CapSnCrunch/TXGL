@@ -120,7 +120,7 @@ class DisconnectedInterval():
         if len(components) > 0:
             self.color = components[0].color
         else:
-            self.color = (0, 0, 255)
+            self.color = np.array([0, 0, 1])
         #self.sort()
 
     def draw(self, ax):

@@ -7,6 +7,8 @@ from classes.interval_funcs import *
 from classes.group_funcs import *
 from classes.intervals import Interval
 
+### THIS CODE IS DEPRECATED, REFERENCE INTERVALS.PY FOR THE MOST RECENT ITERATION OF THIS PROJECT ###
+
 # SEPARATE SEARCH CODE FROM CHECKING CONTAINMENT CODE
 
 class PingPong():

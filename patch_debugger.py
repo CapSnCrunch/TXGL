@@ -98,17 +98,17 @@ def iterate():
     # Look at a particular L1 disconnected interval
     for l1 in list(graph.keys()):
         # Look at each disconnected interval L2 which must be contained in L1
-        failed[l1] = 0
+        failed[l1] = []
         for l2 in graph[l1]:
             # Create a new component around each component which was not contained
             for comp in disconnected_intervals[l2].components:
                 if not disconnected_intervals[l1].contains_image(DisconnectedInterval([comp]), graph[l1][l2]):
-                    failed[l1] += 1
+                    failed[l1] += [(l2, comp)]
                     color = disconnected_intervals[l1].components[0].color
                     x, y = graph[l1][l2] @ rp1_interval((comp.a - comp.e1) % np.pi, (comp.b + comp.e2) % np.pi)
                     b, a = np.arctan2(y,x)
                     disconnected_intervals[l1].components.append(Interval(a - delta, b + delta, 0, 0, [], color))
-            disconnected_intervals[l1].combine(5e-3)
+            disconnected_intervals[l1].combine(5e-2)
     
     for i in range(len(disconnected_intervals)):
         disconnected_intervals[i].combine()
@@ -117,7 +117,10 @@ def iterate():
            print('    ', comp.a, comp.b)
         print()
     
-    print('Number of failed containments', sum(failed.values()))
+    total = 0
+    for i in range(len(failed)):
+        total += len(failed[i])
+    print('Number of failed containments', total)
     return failed
 
 # MAIN LOOP
@@ -143,30 +146,43 @@ while True:
             if width * 0.04 < cursor[0] < width * 0.11 and height * 0.05 < cursor[1] < height * 0.95:
                 dy = int((height * 0.95) / len(disconnected_intervals))
                 selected = (cursor[1] - dy / 2) // dy
+                if failed != {}:
+                    print(failed[selected])
 
     # DRAW DEBUG WINDOW
     win.fill((255, 255, 255))
 
     y = int(height * 0.05)
+    dy = int((height * 0.95) / len(disconnected_intervals))
     for i in range(len(disconnected_intervals)):
-        win.blit(font.render(str(i), False, (0, 0, 0)), (width * 0.02, y - 3))
+        win.blit(font.render(str(i), False, (0, 0, 0)), (width * 0.02, y + dy*i - 3))
         if i == selected:
-            pygame.draw.line(win, (230, 230, 230), (width * 0.04, y), (width * 0.11, y), 20)
-        pygame.draw.line(win, disconnected_intervals[i].color * 255, (width * 0.05, y), (width * 0.1, y), 10)
+            pygame.draw.line(win, (230, 230, 230), (width * 0.04, y + dy*i), (width * 0.11, y+ dy*i), 20)
+        pygame.draw.line(win, disconnected_intervals[i].color * 255, (width * 0.05, y + dy*i), (width * 0.1, y + dy*i), 10)
         if failed != {}:
-            win.blit(font.render(str(failed[i]), False, (255, 0, 0)), (width * 0.12, y - 3))
+            win.blit(font.render(str(len(failed[i])), False, (255, 0, 0)), (width * 0.12, y + dy*i - 3))
 
-        pygame.draw.line(win, (200, 200, 200), (width * 0.15, y), (width * 0.95, y), 2)
+        pygame.draw.line(win, (200, 200, 200), (width * 0.15, y+ dy*i ), (width * 0.95, y+ dy*i ), 2)
         for comp in disconnected_intervals[i].components:
             start = ((width * 0.8) / np.pi) * comp.a + width * 0.15
             end = ((width * 0.8) / np.pi) * comp.b + width * 0.15
             if start < end:
-                pass
-                pygame.draw.line(win, disconnected_intervals[i].color * 255, (start, y), (np.ceil(end), y), 10)
+                pygame.draw.line(win, disconnected_intervals[i].color * 255, (start, y + dy*i), (np.ceil(end), y + dy*i), 10)
             else:
-                pygame.draw.line(win, disconnected_intervals[i].color * 255, (start, y), (width * 0.95, y), 10)
-                pygame.draw.line(win, disconnected_intervals[i].color * 255, (width * 0.15, y), (np.ceil(end), y), 10)
-
-        y += int((height * 0.95) / len(disconnected_intervals))
+                pygame.draw.line(win, disconnected_intervals[i].color * 255, (start, y + dy*i), (width * 0.95, y + dy*i), 10)
+                pygame.draw.line(win, disconnected_intervals[i].color * 255, (width * 0.15, y + dy*i), (np.ceil(end), y + dy*i), 10)
+        
+    if selected != -1 and failed != {}:
+        for i, comp in failed[selected]:
+            # Draw the original component whose image failed to be in the selected interval
+            start = ((width * 0.8) / np.pi) * comp.a + width * 0.15
+            end = ((width * 0.8) / np.pi) * comp.b + width * 0.15
+            if start < end:
+                pygame.draw.line(win, (255, 0, 0), (start, y + dy*i), (np.ceil(end), y + dy*i), 10)
+            else:
+                pygame.draw.line(win, (255, 0, 0), (start, y + dy*i), (width * 0.95, y + dy*i), 10)
+                pygame.draw.line(win, (255, 0, 0), (width * 0.15, y + dy*i), (np.ceil(end), y + dy*i), 10)
+            
+            # Draw the failed image of that component in the selected interval
 
     pygame.display.update()

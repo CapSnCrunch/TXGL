@@ -1,3 +1,4 @@
+from tempfile import tempdir
 import pygame
 from matplotlib.pyplot import disconnect
 from classes.intervals import *
@@ -146,31 +147,31 @@ while True:
             if width * 0.04 < cursor[0] < width * 0.11 and height * 0.05 < cursor[1] < height * 0.95:
                 dy = int((height * 0.95) / len(disconnected_intervals))
                 selected = (cursor[1] - dy / 2) // dy
-                if failed != {}:
-                    print(failed[selected])
+                #if failed != {}:
+                #    print(failed[selected])
 
     # DRAW DEBUG WINDOW
     win.fill((255, 255, 255))
 
-    y = int(height * 0.05)
-    dy = int((height * 0.95) / len(disconnected_intervals))
+    h = int(height * 0.05)
+    dh = int((height * 0.95) / len(disconnected_intervals))
     for i in range(len(disconnected_intervals)):
-        win.blit(font.render(str(i), False, (0, 0, 0)), (width * 0.02, y + dy*i - 3))
+        win.blit(font.render(str(i), False, (0, 0, 0)), (width * 0.02, h + dh*i - 3))
         if i == selected:
-            pygame.draw.line(win, (230, 230, 230), (width * 0.04, y + dy*i), (width * 0.11, y+ dy*i), 20)
-        pygame.draw.line(win, disconnected_intervals[i].color * 255, (width * 0.05, y + dy*i), (width * 0.1, y + dy*i), 10)
+            pygame.draw.line(win, (230, 230, 230), (width * 0.04, h + dh*i), (width * 0.11, h + dh*i), 20)
+        pygame.draw.line(win, disconnected_intervals[i].color * 255, (width * 0.05, h + dh*i), (width * 0.1, h + dh*i), 10)
         if failed != {}:
-            win.blit(font.render(str(len(failed[i])), False, (255, 0, 0)), (width * 0.12, y + dy*i - 3))
+            win.blit(font.render(str(len(failed[i])), False, (255, 0, 0)), (width * 0.12, h + dh*i - 3))
 
-        pygame.draw.line(win, (200, 200, 200), (width * 0.15, y+ dy*i ), (width * 0.95, y+ dy*i ), 2)
+        pygame.draw.line(win, (200, 200, 200), (width * 0.15, h + dh*i ), (width * 0.95, h + dh*i ), 2)
         for comp in disconnected_intervals[i].components:
             start = ((width * 0.8) / np.pi) * comp.a + width * 0.15
             end = ((width * 0.8) / np.pi) * comp.b + width * 0.15
             if start < end:
-                pygame.draw.line(win, disconnected_intervals[i].color * 255, (start, y + dy*i), (np.ceil(end), y + dy*i), 10)
+                pygame.draw.line(win, disconnected_intervals[i].color * 255, (start, h + dh*i), (np.ceil(end), h + dh*i), 10)
             else:
-                pygame.draw.line(win, disconnected_intervals[i].color * 255, (start, y + dy*i), (width * 0.95, y + dy*i), 10)
-                pygame.draw.line(win, disconnected_intervals[i].color * 255, (width * 0.15, y + dy*i), (np.ceil(end), y + dy*i), 10)
+                pygame.draw.line(win, disconnected_intervals[i].color * 255, (start, h + dh*i), (width * 0.95, h + dh*i), 10)
+                pygame.draw.line(win, disconnected_intervals[i].color * 255, (width * 0.15, h + dh*i), (np.ceil(end), h + dh*i), 10)
         
     if selected != -1 and failed != {}:
         for i, comp in failed[selected]:
@@ -178,11 +179,23 @@ while True:
             start = ((width * 0.8) / np.pi) * comp.a + width * 0.15
             end = ((width * 0.8) / np.pi) * comp.b + width * 0.15
             if start < end:
-                pygame.draw.line(win, (255, 0, 0), (start, y + dy*i), (np.ceil(end), y + dy*i), 10)
+                pygame.draw.line(win, (255, 0, 0), (start, h + dh*i), (np.ceil(end), h + dh*i), 15)
             else:
-                pygame.draw.line(win, (255, 0, 0), (start, y + dy*i), (width * 0.95, y + dy*i), 10)
-                pygame.draw.line(win, (255, 0, 0), (width * 0.15, y + dy*i), (np.ceil(end), y + dy*i), 10)
+                pygame.draw.line(win, (255, 0, 0), (start, h + dh*i), (width * 0.95, h + dh*i), 15)
+                pygame.draw.line(win, (255, 0, 0), (width * 0.15, h + dh*i), (np.ceil(end), h + dh*i), 15)
             
             # Draw the failed image of that component in the selected interval
+            x, y = graph[selected][i] @ rp1_interval((comp.a - comp.e1) % np.pi, (comp.b + comp.e2) % np.pi)
+            b, a = np.arctan2(y, x)
+            a, b = a % np.pi, b % np.pi
+
+            start = ((width * 0.8) / np.pi) * a + width * 0.15
+            end = ((width * 0.8) / np.pi) * b + width * 0.15
+
+            if start < end:
+                pygame.draw.line(win, (150, 0, 0), (start, h + dh*selected), (np.ceil(end), h + dh*selected), 5)
+            else:
+                pygame.draw.line(win, (150, 0, 0), (start, h + dh*selected), (width * 0.95, h + dh*selected), 5)
+                pygame.draw.line(win, (150, 0, 0), (width * 0.15, h + dh*selected), (np.ceil(end), h + dh*selected), 5)
 
     pygame.display.update()

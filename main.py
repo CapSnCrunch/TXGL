@@ -34,31 +34,31 @@ print(graph)
 
 # words 5, eps 2e-4, delta 1e-3, combine 1e-4
 # Triangle Group <a, b, c | a^2 = b^2 = c^2 = 1, (ab)^3 = (cb)^3 = (ac)^4 = 1>
-A = np.array([[ 0.923879532511287, -0.217284326304659],
-               [-0.673986071141597, -0.923879532511287]])
-B = np.array([[0.,                1.219308768593441],
-               [0.820136806818482, 0.               ]])
-C = np.array([[ 0.923879532511287,  0.21728432630466 ],
-               [ 0.673986071141597, -0.923879532511286]])
+# A = np.array([[ 0.923879532511287, -0.217284326304659],
+#                [-0.673986071141597, -0.923879532511287]])
+# B = np.array([[0.,                1.219308768593441],
+#                [0.820136806818482, 0.               ]])
+# C = np.array([[ 0.923879532511287,  0.21728432630466 ],
+#                [ 0.673986071141597, -0.923879532511286]])
 
-graph = {0: {},
-            1: {4: B, 5: C},
-            2: {6: A, 7: C},
-            3: {8: A, 9: B},
-            4: {10: A, 7: C},
-            5: {11: A, 9: B},
-            6: {1: B, 5: C},
-            7: {8: A, 12: B},
-            8: {4: B, 13: C},
-            9: {6: A, 12: C},
-            10: {14: C},
-            11: {4: B, 15: C},
-            12: {16: A},
-            13: {16: A, 9: B},
-            14: {11: A, 12: B},
-            15: {17: B},
-            16: {10: B, 13: C},
-            17: {10: A, 12: C}}
+# graph = {0: {},
+#             1: {4: B, 5: C},
+#             2: {6: A, 7: C},
+#             3: {8: A, 9: B},
+#             4: {10: A, 7: C},
+#             5: {11: A, 9: B},
+#             6: {1: B, 5: C},
+#             7: {8: A, 12: B},
+#             8: {4: B, 13: C},
+#             9: {6: A, 12: C},
+#             10: {14: C},
+#             11: {4: B, 15: C},
+#             12: {16: A},
+#             13: {16: A, 9: B},
+#             14: {11: A, 12: B},
+#             15: {17: B},
+#             16: {10: B, 13: C},
+#             17: {10: A, 12: C}}
 
 words = allwords(graph, 6, 6)
 #print(len(words))
@@ -94,6 +94,9 @@ for i in range(len(words)):
 #                     expand.append(disconnected_intervals[l1])
     
 #     print(i, failed)
+    # if not failed:
+    #     print('Found valid intervals!')
+    #     break
 
 #     fig, ax = plt.subplots(figsize = (5, 5), facecolor=((214/255, 245/255, 174/255)))
 
@@ -120,14 +123,10 @@ for i in range(len(words)):
 #     plt.clf()
 #     plt.close()
 
-#     if not failed:
-#         print('Found valid intervals!')
-#         break
-
 ### PATCH SEARCH ###
 # Extend a disconnected interval exactly the amount required by adding components around the images it must contain and combining
-delta = 3e-5 # Extra space just over the image
-for i in range(25):
+delta = 5e-2 # Extra space just over the image
+for i in range(100):
     failed = 0
     for l1 in list(graph.keys()):
         for l2 in graph[l1]:
@@ -139,7 +138,7 @@ for i in range(25):
                     x, y = graph[l1][l2] @ rp1_interval((comp.a - comp.e1) % np.pi, (comp.b + comp.e2) % np.pi)
                     b, a = np.arctan2(y,x)
                     disconnected_intervals[l1].components.append(Interval(a - delta, b + delta, 0, 0, [], color))
-            disconnected_intervals[l1].combine(5e-3)
+            disconnected_intervals[l1].combine(3e-2)
     print('Iteration', i, '  Number of failed containments', failed)
 
     for i in range(len(disconnected_intervals)):
@@ -148,6 +147,10 @@ for i in range(25):
         #for comp in disconnected_intervals[i].components:
         #    print(comp.a, comp.b)
         #print()
+    
+    if not failed:
+        print('Found valid intervals!')
+        break
 
     # DRAW FIGURES FOR GIF
     # fig, ax = plt.subplots(figsize = (5, 5))
@@ -174,11 +177,7 @@ for i in range(25):
     plt.clf()
     plt.close()'''
 
-    # if not failed:
-    #     print('Found valid intervals!')
-    #     break
-
-fig, ax = plt.subplots(figsize = (5, 5), facecolor=((214/255, 245/255, 174/255)))
+fig, ax = plt.subplots(figsize = (5, 5), facecolor=((255/255, 255/255, 255/255)))
 
 # RP1
 rp1 = Circle((0, 0), 1.0, fill = False)
@@ -188,9 +187,9 @@ for i in range(len(disconnected_intervals)):
     disconnected_intervals[i].combine()
     disconnected_intervals[i].draw(ax)
     print(f"Components:   {len(disconnected_intervals[i].components)}")
-    #for comp in disconnected_intervals[i].components:
-    #    print(comp.a, comp.b)
-    #print()
+    for comp in disconnected_intervals[i].components:
+       print(comp.a, comp.b)
+    print()
 
 for l1 in list(graph.keys()):
     for l2 in graph[l1]:

@@ -45,31 +45,31 @@ print(graph)
 
 # words 5, eps 2e-4, delta 1e-3, combine 1e-4
 # Triangle Group <a, b, c | a^2 = b^2 = c^2 = 1, (ab)^3 = (cb)^3 = (ac)^4 = 1>
-A = np.array([[ 0.923879532511287, -0.217284326304659],
-               [-0.673986071141597, -0.923879532511287]])
-B = np.array([[0.,                1.219308768593441],
-               [0.820136806818482, 0.               ]])
-C = np.array([[ 0.923879532511287,  0.21728432630466 ],
-               [ 0.673986071141597, -0.923879532511286]])
+# A = np.array([[ 0.923879532511287, -0.217284326304659],
+#                [-0.673986071141597, -0.923879532511287]])
+# B = np.array([[0.,                1.219308768593441],
+#                [0.820136806818482, 0.               ]])
+# C = np.array([[ 0.923879532511287,  0.21728432630466 ],
+#                [ 0.673986071141597, -0.923879532511286]])
 
-graph = {0: {},
-            1: {4: B, 5: C},
-            2: {6: A, 7: C},
-            3: {8: A, 9: B},
-            4: {10: A, 7: C},
-            5: {11: A, 9: B},
-            6: {1: B, 5: C},
-            7: {8: A, 12: B},
-            8: {4: B, 13: C},
-            9: {6: A, 12: C},
-            10: {14: C},
-            11: {4: B, 15: C},
-            12: {16: A},
-            13: {16: A, 9: B},
-            14: {11: A, 12: B},
-            15: {17: B},
-            16: {10: B, 13: C},
-            17: {10: A, 12: C}}
+# graph = {0: {},
+#             1: {4: B, 5: C},
+#             2: {6: A, 7: C},
+#             3: {8: A, 9: B},
+#             4: {10: A, 7: C},
+#             5: {11: A, 9: B},
+#             6: {1: B, 5: C},
+#             7: {8: A, 12: B},
+#             8: {4: B, 13: C},
+#             9: {6: A, 12: C},
+#             10: {14: C},
+#             11: {4: B, 15: C},
+#             12: {16: A},
+#             13: {16: A, 9: B},
+#             14: {11: A, 12: B},
+#             15: {17: B},
+#             16: {10: B, 13: C},
+#             17: {10: A, 12: C}}
 
 words = allwords(graph, 6, 6)
 #print(len(words))
@@ -93,7 +93,7 @@ for i in range(len(words)):
 def iterate():
     ### PATCH SEARCH ###
     # Extend a disconnected interval exactly the amount required by adding components around the images it must contain and combining
-    delta = 3e-4 # Extra space just over the image
+    delta = 5e-2 # Extra space just over the image (3e-4)
 
     failed = {}
     # Look at a particular L1 disconnected interval
@@ -107,9 +107,9 @@ def iterate():
                     failed[l1] += [(l2, comp)]
                     color = disconnected_intervals[l1].components[0].color
                     x, y = graph[l1][l2] @ rp1_interval((comp.a - comp.e1) % np.pi, (comp.b + comp.e2) % np.pi)
-                    b, a = np.arctan2(y,x)
+                    a, b = np.arctan2(y,x)
                     disconnected_intervals[l1].components.append(Interval(a - delta, b + delta, 0, 0, [], color))
-            disconnected_intervals[l1].combine(5e-2)
+            disconnected_intervals[l1].combine(3e-2) # (5e-2)
     
     for i in range(len(disconnected_intervals)):
         disconnected_intervals[i].combine()
@@ -121,7 +121,10 @@ def iterate():
     total = 0
     for i in range(len(failed)):
         total += len(failed[i])
-    print('Number of failed containments', total)
+    if total == 0:
+        print('FOUND VALID INTERVALS')
+    else:
+        print('Number of failed containments', total)
     return failed
 
 # MAIN LOOP
@@ -130,26 +133,41 @@ selected = -1
 selected_error = None
 failed = {}
 print()
-print('Press any key to run the first iteration')
+print('Press SPACE to run the first iteration')
 while True:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             pygame.quit()
         if event.type == pygame.KEYDOWN:
-            print()
-            print('Iteration', iteration)
-            print('Running ... ')
-            failed = iterate()
-            iteration += 1
-            print()
-            print('Press any key to run iteration', iteration)
+            if event.key == pygame.K_SPACE:
+                print()
+                print('Iteration', iteration)
+                print('Running ... ')
+                failed = iterate()
+                iteration += 1
+                print()
+                print('Press SPACE to run iteration', iteration)
+            elif selected_error != None:
+                for i, comp in failed[selected]:
+                    if selected_error == None or selected_error == comp:
+                        # Draw the failed image of that component in the selected interval
+                        x, y = graph[selected][i] @ rp1_interval((comp.a - comp.e1) % np.pi, (comp.b + comp.e2) % np.pi)
+                        a, b = np.arctan2(y, x) # b, a?
+                        a, b = a % np.pi, b % np.pi
+
+                        print('  IMAGE OF FAILED COMPONENT', a, b)
+                    
+                        print('  SHOULD BE CONTAINED IN')
+                        for comp2 in disconnected_intervals[selected].components:
+                            print('    ', comp2.a, comp2.b)
+                
         if event.type == pygame.MOUSEBUTTONDOWN:
             cursor = list(pygame.mouse.get_pos())
             print(selected, selected_error)
             h = int(height * 0.05)
             dh = int((height * 0.95) / len(disconnected_intervals))
             if width * 0.04 < cursor[0] < width * 0.11 and height * 0.05 < cursor[1] < height * 0.95:
-                selected = (cursor[1] - dh / 2) // dh
+                selected = (cursor[1] - 8) // dh
                 selected_error = None
                 #if failed != {}:
                 #    print(failed[selected])
@@ -216,7 +234,7 @@ while True:
             if selected_error == None or selected_error == comp:
                 # Draw the failed image of that component in the selected interval
                 x, y = graph[selected][i] @ rp1_interval((comp.a - comp.e1) % np.pi, (comp.b + comp.e2) % np.pi)
-                b, a = np.arctan2(y, x)
+                a, b = np.arctan2(y, x) # b, a?
                 a, b = a % np.pi, b % np.pi
 
                 start = ((width * 0.75) / np.pi) * a + width * 0.15

@@ -149,6 +149,8 @@ while True:
                 selected = (cursor[1] - dy / 2) // dy
                 #if failed != {}:
                 #    print(failed[selected])
+            else:
+                selected = -1
 
     # DRAW DEBUG WINDOW
     win.fill((255, 255, 255))

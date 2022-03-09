@@ -8,7 +8,7 @@ from classes.graph_funcs import *
 from colors import colors
 
 ### CREATE DEBUGGER WINDOW ###
-width, height = 600, 400
+width, height = 1000, 400
 win = pygame.display.set_mode((width, height))
 pygame.display.set_caption('TXGL Patch Search Debugger')
 
@@ -190,10 +190,13 @@ while True:
             start = ((width * 0.75) / np.pi) * comp.a + width * 0.15
             end = ((width * 0.75) / np.pi) * comp.b + width * 0.15
             if start < end:
-                pygame.draw.line(win, disconnected_intervals[i].color * 255, (start, h + dh*i), (np.ceil(end), h + dh*i), 10)
+                pygame.draw.line(win, disconnected_intervals[i].color * 255, (np.floor(start), h + dh*i), (np.ceil(end), h + dh*i), 10)
             else:
-                pygame.draw.line(win, disconnected_intervals[i].color * 255, (start, h + dh*i), (width * 0.9, h + dh*i), 10)
+                pygame.draw.line(win, disconnected_intervals[i].color * 255, (np.floor(start), h + dh*i), (width * 0.9, h + dh*i), 10)
                 pygame.draw.line(win, disconnected_intervals[i].color * 255, (width * 0.15, h + dh*i), (np.ceil(end), h + dh*i), 10)
+        
+        # Number of Components
+        win.blit(font.render(str(len(disconnected_intervals[i].components)), False, (0, 0, 0)), (width * 0.95, h + dh*i - 3))
         
     if selected != -1 and failed != {}:
         for i, comp in failed[selected]:
@@ -205,9 +208,9 @@ while True:
             start = ((width * 0.75) / np.pi) * comp.a + width * 0.15
             end = ((width * 0.75) / np.pi) * comp.b + width * 0.15
             if start < end:
-                pygame.draw.line(win, (255, 0, 0, alpha), (start, h + dh*i), (np.ceil(end), h + dh*i), 15)
+                pygame.draw.line(win, (255, 0, 0, alpha), (np.floor(start), h + dh*i), (np.ceil(end), h + dh*i), 15)
             else:
-                pygame.draw.line(win, (255, 0, 0, alpha), (start, h + dh*i), (width * 0.9, h + dh*i), 15)
+                pygame.draw.line(win, (255, 0, 0, alpha), (np.floor(start), h + dh*i), (width * 0.9, h + dh*i), 15)
                 pygame.draw.line(win, (255, 0, 0, alpha), (width * 0.15, h + dh*i), (np.ceil(end), h + dh*i), 15)
             
             if selected_error == None or selected_error == comp:
@@ -220,9 +223,9 @@ while True:
                 end = ((width * 0.75) / np.pi) * b + width * 0.15
 
                 if start < end:
-                    pygame.draw.line(win, (150, 0, 0), (start, h + dh*selected), (np.ceil(end), h + dh*selected), 5)
+                    pygame.draw.line(win, (150, 0, 0), (np.floor(start), h + dh*selected), (np.ceil(end), h + dh*selected), 5)
                 else:
-                    pygame.draw.line(win, (150, 0, 0), (start, h + dh*selected), (width * 0.9, h + dh*selected), 5)
+                    pygame.draw.line(win, (150, 0, 0), (np.floor(start), h + dh*selected), (width * 0.9, h + dh*selected), 5)
                     pygame.draw.line(win, (150, 0, 0), (width * 0.15, h + dh*selected), (np.ceil(end), h + dh*selected), 5)
 
     pygame.display.update()

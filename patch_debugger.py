@@ -127,6 +127,7 @@ def iterate():
 # MAIN LOOP
 iteration = 0
 selected = -1
+selected_error = None
 failed = {}
 print()
 print('Press any key to run the first iteration')
@@ -144,13 +145,30 @@ while True:
             print('Press any key to run iteration', iteration)
         if event.type == pygame.MOUSEBUTTONDOWN:
             cursor = list(pygame.mouse.get_pos())
+            print(selected, selected_error)
+            h = int(height * 0.05)
+            dh = int((height * 0.95) / len(disconnected_intervals))
             if width * 0.04 < cursor[0] < width * 0.11 and height * 0.05 < cursor[1] < height * 0.95:
-                dy = int((height * 0.95) / len(disconnected_intervals))
-                selected = (cursor[1] - dy / 2) // dy
+                selected = (cursor[1] - dh / 2) // dh
+                selected_error = None
                 #if failed != {}:
                 #    print(failed[selected])
-            else:
-                selected = -1
+            elif selected != -1 and failed != {}:
+                # Check if we are selecting a particular image
+                deselect = True
+                for i, comp in failed[selected]:
+                    start = ((width * 0.75) / np.pi) * comp.a + width * 0.15
+                    end = ((width * 0.75) / np.pi) * comp.b + width * 0.15
+                    if start < end and (start - 2) < cursor[0] < (end + 2) and (h + dh*i - 10) < cursor[1] < (h + dh*i + 10):
+                        selected_error = comp
+                        deselect = False
+                    elif end < start and (width * 0.15 < cursor[0] < (end + 2) or (start + 2) < cursor[0] < (width * 0.75)) and (h + dh*i - 10) < cursor[1] < (h + dh*i + 10):
+                        selected_error = comp
+                        deselect = False
+                if deselect == True and selected_error != None:
+                    selected_error = None
+                elif deselect == True and selected_error == None:
+                    selected = -1
 
     # DRAW DEBUG WINDOW
     win.fill((255, 255, 255))
@@ -158,6 +176,7 @@ while True:
     h = int(height * 0.05)
     dh = int((height * 0.95) / len(disconnected_intervals))
     for i in range(len(disconnected_intervals)):
+        # Interval Indicators
         win.blit(font.render(str(i), False, (0, 0, 0)), (width * 0.02, h + dh*i - 3))
         if i == selected:
             pygame.draw.line(win, (230, 230, 230), (width * 0.04, h + dh*i), (width * 0.11, h + dh*i), 20)
@@ -165,39 +184,45 @@ while True:
         if failed != {}:
             win.blit(font.render(str(len(failed[i])), False, (255, 0, 0)), (width * 0.12, h + dh*i - 3))
 
-        pygame.draw.line(win, (200, 200, 200), (width * 0.15, h + dh*i ), (width * 0.95, h + dh*i ), 2)
+        # Interval Components
+        pygame.draw.line(win, (200, 200, 200), (width * 0.15, h + dh*i), (width * 0.9, h + dh*i), 1 + (selected == i) * 2)
         for comp in disconnected_intervals[i].components:
-            start = ((width * 0.8) / np.pi) * comp.a + width * 0.15
-            end = ((width * 0.8) / np.pi) * comp.b + width * 0.15
+            start = ((width * 0.75) / np.pi) * comp.a + width * 0.15
+            end = ((width * 0.75) / np.pi) * comp.b + width * 0.15
             if start < end:
                 pygame.draw.line(win, disconnected_intervals[i].color * 255, (start, h + dh*i), (np.ceil(end), h + dh*i), 10)
             else:
-                pygame.draw.line(win, disconnected_intervals[i].color * 255, (start, h + dh*i), (width * 0.95, h + dh*i), 10)
+                pygame.draw.line(win, disconnected_intervals[i].color * 255, (start, h + dh*i), (width * 0.9, h + dh*i), 10)
                 pygame.draw.line(win, disconnected_intervals[i].color * 255, (width * 0.15, h + dh*i), (np.ceil(end), h + dh*i), 10)
         
     if selected != -1 and failed != {}:
         for i, comp in failed[selected]:
+            alpha = 0.5
+            if selected_error == None or selected_error == comp:
+                alpha = 1
+                
             # Draw the original component whose image failed to be in the selected interval
-            start = ((width * 0.8) / np.pi) * comp.a + width * 0.15
-            end = ((width * 0.8) / np.pi) * comp.b + width * 0.15
+            start = ((width * 0.75) / np.pi) * comp.a + width * 0.15
+            end = ((width * 0.75) / np.pi) * comp.b + width * 0.15
             if start < end:
-                pygame.draw.line(win, (255, 0, 0), (start, h + dh*i), (np.ceil(end), h + dh*i), 15)
+                pygame.draw.line(win, (255, 0, 0, alpha), (start, h + dh*i), (np.ceil(end), h + dh*i), 15)
             else:
-                pygame.draw.line(win, (255, 0, 0), (start, h + dh*i), (width * 0.95, h + dh*i), 15)
-                pygame.draw.line(win, (255, 0, 0), (width * 0.15, h + dh*i), (np.ceil(end), h + dh*i), 15)
+                pygame.draw.line(win, (255, 0, 0, alpha), (start, h + dh*i), (width * 0.9, h + dh*i), 15)
+                pygame.draw.line(win, (255, 0, 0, alpha), (width * 0.15, h + dh*i), (np.ceil(end), h + dh*i), 15)
             
-            # Draw the failed image of that component in the selected interval
-            x, y = graph[selected][i] @ rp1_interval((comp.a - comp.e1) % np.pi, (comp.b + comp.e2) % np.pi)
-            b, a = np.arctan2(y, x)
-            a, b = a % np.pi, b % np.pi
+            if selected_error == None or selected_error == comp:
+                # Draw the failed image of that component in the selected interval
+                x, y = graph[selected][i] @ rp1_interval((comp.a - comp.e1) % np.pi, (comp.b + comp.e2) % np.pi)
+                b, a = np.arctan2(y, x)
+                a, b = a % np.pi, b % np.pi
 
-            start = ((width * 0.8) / np.pi) * a + width * 0.15
-            end = ((width * 0.8) / np.pi) * b + width * 0.15
+                start = ((width * 0.75) / np.pi) * a + width * 0.15
+                end = ((width * 0.75) / np.pi) * b + width * 0.15
 
-            if start < end:
-                pygame.draw.line(win, (150, 0, 0), (start, h + dh*selected), (np.ceil(end), h + dh*selected), 5)
-            else:
-                pygame.draw.line(win, (150, 0, 0), (start, h + dh*selected), (width * 0.95, h + dh*selected), 5)
-                pygame.draw.line(win, (150, 0, 0), (width * 0.15, h + dh*selected), (np.ceil(end), h + dh*selected), 5)
+                if start < end:
+                    pygame.draw.line(win, (150, 0, 0), (start, h + dh*selected), (np.ceil(end), h + dh*selected), 5)
+                else:
+                    pygame.draw.line(win, (150, 0, 0), (start, h + dh*selected), (width * 0.9, h + dh*selected), 5)
+                    pygame.draw.line(win, (150, 0, 0), (width * 0.15, h + dh*selected), (np.ceil(end), h + dh*selected), 5)
 
     pygame.display.update()

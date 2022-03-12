@@ -13,7 +13,7 @@ win = pygame.display.set_mode((width, height))
 pygame.display.set_caption('TXGL Patch Search Debugger')
 
 pygame.font.init()
-font = pygame.font.SysFont('Roboto', 15)
+font = pygame.font.SysFont('Roboto', 18)
 
 ### CREATE REPRESENTATION ###
 orders = [2, 3] # Doesn't work for [3, m]
@@ -41,35 +41,35 @@ graph = {0: {1: B}, 1: {0: A, 2: B}, 2: {0 : A}}
 #graph = {0: {1: B}, 1: {0: A, 2: B}, 2: {0: A, 3: B}, 3: {0: A}}
 
 #graph = generate_graph(orders, [A, B])
-print(graph)
+#print(graph)
 
 # words 5, eps 2e-4, delta 1e-3, combine 1e-4
 # Triangle Group <a, b, c | a^2 = b^2 = c^2 = 1, (ab)^3 = (cb)^3 = (ac)^4 = 1>
-# A = np.array([[ 0.923879532511287, -0.217284326304659],
-#                [-0.673986071141597, -0.923879532511287]])
-# B = np.array([[0.,                1.219308768593441],
-#                [0.820136806818482, 0.               ]])
-# C = np.array([[ 0.923879532511287,  0.21728432630466 ],
-#                [ 0.673986071141597, -0.923879532511286]])
+A = np.array([[ 0.923879532511287, -0.217284326304659],
+               [-0.673986071141597, -0.923879532511287]])
+B = np.array([[0.,                1.219308768593441],
+               [0.820136806818482, 0.               ]])
+C = np.array([[ 0.923879532511287,  0.21728432630466 ],
+               [ 0.673986071141597, -0.923879532511286]])
 
-# graph = {0: {},
-#             1: {4: B, 5: C},
-#             2: {6: A, 7: C},
-#             3: {8: A, 9: B},
-#             4: {10: A, 7: C},
-#             5: {11: A, 9: B},
-#             6: {1: B, 5: C},
-#             7: {8: A, 12: B},
-#             8: {4: B, 13: C},
-#             9: {6: A, 12: C},
-#             10: {14: C},
-#             11: {4: B, 15: C},
-#             12: {16: A},
-#             13: {16: A, 9: B},
-#             14: {11: A, 12: B},
-#             15: {17: B},
-#             16: {10: B, 13: C},
-#             17: {10: A, 12: C}}
+graph = {0: {},
+            1: {4: B, 5: C},
+            2: {6: A, 7: C},
+            3: {8: A, 9: B},
+            4: {10: A, 7: C},
+            5: {11: A, 9: B},
+            6: {1: B, 5: C},
+            7: {8: A, 12: B},
+            8: {4: B, 13: C},
+            9: {6: A, 12: C},
+            10: {14: C},
+            11: {4: B, 15: C},
+            12: {16: A},
+            13: {16: A, 9: B},
+            14: {11: A, 12: B},
+            15: {17: B},
+            16: {10: B, 13: C},
+            17: {10: A, 12: C}}
 
 words = allwords(graph, 6, 6)
 #print(len(words))
@@ -93,7 +93,7 @@ for i in range(len(words)):
 def iterate():
     ### PATCH SEARCH ###
     # Extend a disconnected interval exactly the amount required by adding components around the images it must contain and combining
-    delta = 5e-2 # Extra space just over the image (3e-4)
+    delta = 5e-3 # Extra space just over the image (3e-4)
 
     failed = {}
     # Look at a particular L1 disconnected interval
@@ -107,7 +107,7 @@ def iterate():
                     failed[l1] += [(l2, comp)]
                     color = disconnected_intervals[l1].components[0].color
                     x, y = graph[l1][l2] @ rp1_interval((comp.a - comp.e1) % np.pi, (comp.b + comp.e2) % np.pi)
-                    a, b = np.arctan2(y,x)
+                    b, a = np.arctan2(y,x) # b, a?
                     disconnected_intervals[l1].components.append(Interval(a - delta, b + delta, 0, 0, [], color))
             disconnected_intervals[l1].combine(3e-2) # (5e-2)
     
@@ -152,7 +152,7 @@ while True:
                     if selected_error == None or selected_error == comp:
                         # Draw the failed image of that component in the selected interval
                         x, y = graph[selected][i] @ rp1_interval((comp.a - comp.e1) % np.pi, (comp.b + comp.e2) % np.pi)
-                        a, b = np.arctan2(y, x) # b, a?
+                        b, a = np.arctan2(y, x) # b, a?
                         a, b = a % np.pi, b % np.pi
 
                         print('  IMAGE OF FAILED COMPONENT', a, b)
@@ -212,6 +212,8 @@ while True:
             else:
                 pygame.draw.line(win, disconnected_intervals[i].color * 255, (np.floor(start), h + dh*i), (width * 0.9, h + dh*i), 10)
                 pygame.draw.line(win, disconnected_intervals[i].color * 255, (width * 0.15, h + dh*i), (np.ceil(end), h + dh*i), 10)
+            pygame.draw.line(win, disconnected_intervals[i].color * 255, (np.floor(start), h + dh*i), (np.floor(start)+1, h + dh*i), 14)
+            pygame.draw.line(win, disconnected_intervals[i].color * 255, (np.ceil(end) + 1, h + dh*i), (np.ceil(end), h + dh*i), 14)
         
         # Number of Components
         win.blit(font.render(str(len(disconnected_intervals[i].components)), False, (0, 0, 0)), (width * 0.95, h + dh*i - 3))
@@ -230,11 +232,13 @@ while True:
             else:
                 pygame.draw.line(win, (255, 0, 0, alpha), (np.floor(start), h + dh*i), (width * 0.9, h + dh*i), 15)
                 pygame.draw.line(win, (255, 0, 0, alpha), (width * 0.15, h + dh*i), (np.ceil(end), h + dh*i), 15)
+            pygame.draw.line(win, (255, 0, 0), (np.floor(start), h + dh*i), (np.floor(start)+1, h + dh*i), 17)
+            pygame.draw.line(win, (255, 0, 0), (np.ceil(end) + 1, h + dh*i), (np.ceil(end), h + dh*i), 17)
             
             if selected_error == None or selected_error == comp:
                 # Draw the failed image of that component in the selected interval
                 x, y = graph[selected][i] @ rp1_interval((comp.a - comp.e1) % np.pi, (comp.b + comp.e2) % np.pi)
-                a, b = np.arctan2(y, x) # b, a?
+                b, a = np.arctan2(y, x) # b, a?
                 a, b = a % np.pi, b % np.pi
 
                 start = ((width * 0.75) / np.pi) * a + width * 0.15
@@ -245,5 +249,7 @@ while True:
                 else:
                     pygame.draw.line(win, (150, 0, 0), (np.floor(start), h + dh*selected), (width * 0.9, h + dh*selected), 5)
                     pygame.draw.line(win, (150, 0, 0), (width * 0.15, h + dh*selected), (np.ceil(end), h + dh*selected), 5)
+                pygame.draw.line(win, (150, 0, 0), (np.floor(start), h + dh*selected), (np.floor(start)+1, h + dh*selected), 7)
+                pygame.draw.line(win, (150, 0, 0), (np.ceil(end) + 1, h + dh*selected), (np.ceil(end), h + dh*selected), 7)
 
     pygame.display.update()

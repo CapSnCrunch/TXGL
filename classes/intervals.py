@@ -37,6 +37,18 @@ class Interval():
             theta2, theta1 = get_arc_params(mat @ I)
         ax.add_patch(Arc((0,0), 2., 2., theta1 = theta1, theta2 = theta2, color = (self.color + 1)/2, linewidth = 7))
 
+    def get_image(self, mat):
+        '''Get image of interval under a given matrix, return the new interval'''
+        x, y = mat @ rp1_interval((self.a - self.e1) % np.pi, (self.b + self.e2) % np.pi)
+
+        if np.linalg.det(mat) < 0:
+            b, a = np.arctan2(y, x)
+            b, a = a % np.pi, b % np.pi
+        else:
+            a, b = np.arctan2(y, x)
+            a, b = a % np.pi, b % np.pi
+        return (a, b)
+
     def contains(self, other):
         '''Check if intervals contains another interval'''
         ta = 360
@@ -184,8 +196,8 @@ class DisconnectedInterval():
 
 if __name__ == '__main__':
     i1 = Interval(0, 0.2, 0, 0, [], np.array([1,0,0]))
-    i2 = Interval(0.3, 0.4, 1, 0, [], np.array([1,0,0]))
-    i3 = Interval(0.35, 0.75, 2, 0, [], np.array([1,0,0]))
+    i2 = Interval(0.3, 0.4, 1, 0, [], np.array([0,1,0]))
+    i3 = Interval(0.35, 0.75, 2, 0, [], np.array([0,0,1]))
     i4 = Interval(0.7, 1, 2, 0, [], np.array([1,0,0]))
     di = DisconnectedInterval([i1, i2, i3, i4])
 
@@ -193,9 +205,14 @@ if __name__ == '__main__':
     j2 = Interval(0.7, 0.8, 2, 0, [], np.array([0,0,1]))
     dj = DisconnectedInterval([j1, j2])
 
-    print(di.contains(dj))
-    print(len(di.components))
-    print(len(dj.components))
+    A = np.array([[0, 1],
+                  [1, 0]])
+    B = np.array([[ 0.923879532511287, -0.217284326304659],
+                  [-0.673986071141597, -0.923879532511287]])
+
+    # print(di.contains(dj))
+    # print(len(di.components))
+    # print(len(dj.components))
 
     ### DRAW INTERVALS ###
     fig, ax = plt.subplots(figsize = (5, 5))
@@ -211,7 +228,18 @@ if __name__ == '__main__':
     ax.add_patch(rp1)
 
     # Disconnected Interval
-    di.draw(ax)
-    dj.draw(ax)
+    # di.draw(ax)
+    # dj.draw(ax)
+
+    i1.draw(ax)
+    i2.draw(ax)
+
+    i1.draw_image(ax, B)
+    i2.draw_image(ax, B)
+    #i3.draw_image(ax, A)
+
+    print(i1.get_image(B))
+    print(i2.get_image(B))
+    # print(i3.get_image(B))
 
     plt.show()

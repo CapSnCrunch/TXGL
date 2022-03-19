@@ -89,6 +89,21 @@ for i in range(len(words)):
     initial_intervals.combine()
     disconnected_intervals.append(initial_intervals)
 
+# Get the current failing images
+def get_failures():
+    failed = {}
+    # Look at a particular L1 disconnected interval
+    for l1 in list(graph.keys()):
+        # Look at each disconnected interval L2 which must be contained in L1
+        failed[l1] = []
+        for l2 in graph[l1]:
+            # Create a new component around each component which was not contained
+            for comp in disconnected_intervals[l2].components:
+                if not disconnected_intervals[l1].contains_image(DisconnectedInterval([comp]), graph[l1][l2]):
+                    failed[l1] += [(l2, comp)]
+    
+    return failed
+
 # Iterate the search on the global variable disconnected_intervals
 def iterate():
     ### PATCH SEARCH ###
@@ -131,7 +146,7 @@ def iterate():
 iteration = 0
 selected = -1
 selected_error = None
-failed = {}
+failed = get_failures()
 print()
 print('Press SPACE to run the first iteration')
 while True:
@@ -143,8 +158,11 @@ while True:
                 print()
                 print('Iteration', iteration)
                 print('Running ... ')
-                failed = iterate()
+
+                iterate()
+                failed = get_failures()
                 iteration += 1
+
                 print()
                 print('Press SPACE to run iteration', iteration)
             elif selected_error != None:

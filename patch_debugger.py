@@ -151,11 +151,13 @@ while True:
                 for i, comp in failed[selected]:
                     if selected_error == None or selected_error == comp:
                         # Draw the failed image of that component in the selected interval
-                        x, y = graph[selected][i] @ rp1_interval((comp.a - comp.e1) % np.pi, (comp.b + comp.e2) % np.pi)
-                        b, a = np.arctan2(y, x) # b, a?
-                        a, b = a % np.pi, b % np.pi
+                        # x, y = graph[selected][i] @ rp1_interval((comp.a - comp.e1) % np.pi, (comp.b + comp.e2) % np.pi)
+                        # b, a = np.arctan2(y, x) # b, a?
+                        # a, b = a % np.pi, b % np.pi
 
-                        print('  IMAGE OF FAILED COMPONENT', a, b)
+                        image = comp.get_image(graph[selected][i])
+
+                        print('  IMAGE OF FAILED COMPONENT', image.a, image.b)
                     
                         print('  SHOULD BE CONTAINED IN')
                         for comp2 in disconnected_intervals[selected].components:
@@ -237,12 +239,14 @@ while True:
             
             if selected_error == None or selected_error == comp:
                 # Draw the failed image of that component in the selected interval
-                x, y = graph[selected][i] @ rp1_interval((comp.a - comp.e1) % np.pi, (comp.b + comp.e2) % np.pi)
-                b, a = np.arctan2(y, x) # b, a?
-                a, b = a % np.pi, b % np.pi
+                # x, y = graph[selected][i] @ rp1_interval((comp.a - comp.e1) % np.pi, (comp.b + comp.e2) % np.pi)
+                # b, a = np.arctan2(y, x) # b, a?
+                # a, b = a % np.pi, b % np.pi
 
-                start = ((width * 0.75) / np.pi) * a + width * 0.15
-                end = ((width * 0.75) / np.pi) * b + width * 0.15
+                image = comp.get_image(graph[selected][i])
+
+                start = ((width * 0.75) / np.pi) * image.a + width * 0.15
+                end = ((width * 0.75) / np.pi) * image.b + width * 0.15
 
                 if start < end:
                     pygame.draw.line(win, (150, 0, 0), (np.floor(start), h + dh*selected), (np.ceil(end), h + dh*selected), 5)

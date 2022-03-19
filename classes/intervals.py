@@ -22,6 +22,7 @@ class Interval():
     def draw(self, ax):
         '''Draw the interval'''
         theta2, theta1 = get_arc_params(rp1_interval((self.a - self.e1) % np.pi, (self.b + self.e2) % np.pi))
+        print('drawing between', theta1, theta2)
         ax.add_patch(Arc((0,0), 2., 2., theta1 = theta1, theta2 = theta2, color = self.color, linewidth=10))
 
     def draw_image(self, ax, mat):
@@ -35,6 +36,7 @@ class Interval():
             theta1, theta2 = get_arc_params(mat @ I)
         else:
             theta2, theta1 = get_arc_params(mat @ I)
+        print('drawing image between',theta1, theta2)
         ax.add_patch(Arc((0,0), 2., 2., theta1 = theta1, theta2 = theta2, color = (self.color + 1)/2, linewidth = 7))
 
     def get_image(self, mat):
@@ -43,11 +45,12 @@ class Interval():
 
         if np.linalg.det(mat) < 0:
             b, a = np.arctan2(y, x)
-            b, a = a % np.pi, b % np.pi
+            a, b = a % np.pi, b % np.pi
         else:
             a, b = np.arctan2(y, x)
             a, b = a % np.pi, b % np.pi
-        return (a, b)
+        # return (a, b)
+        return Interval(a, b, 0, 0, [], self.color)
 
     def contains(self, other):
         '''Check if intervals contains another interval'''
@@ -125,6 +128,9 @@ class Interval():
             if i >= np.pi:
                 break
             i += eps
+    
+    def __str__(self):
+        return str(self.a) + ' ' + str(self.b)
 
 class DisconnectedInterval():
     def __init__(self, components = []):
@@ -231,15 +237,13 @@ if __name__ == '__main__':
     # di.draw(ax)
     # dj.draw(ax)
 
-    i1.draw(ax)
-    i2.draw(ax)
+    #i1.draw(ax)
+    # i1Image = i1.get_image(B)
+    # print(i1Image)
 
-    i1.draw_image(ax, B)
-    i2.draw_image(ax, B)
-    #i3.draw_image(ax, A)
+    # i1.draw_image(ax, B)
+    # i1Image.draw(ax)
 
-    print(i1.get_image(B))
-    print(i2.get_image(B))
     # print(i3.get_image(B))
 
     plt.show()

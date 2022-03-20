@@ -40,7 +40,7 @@ graph = {0: {1: B}, 1: {0: A, 2: B}, 2: {0 : A}}
 # For orders [2, 4]
 #graph = {0: {1: B}, 1: {0: A, 2: B}, 2: {0: A, 3: B}, 3: {0: A}}
 
-#graph = generate_graph(orders, [A, B])
+# graph = generate_graph(orders, [A, B])
 #print(graph)
 
 # words 5, eps 2e-4, delta 1e-3, combine 1e-4
@@ -126,12 +126,12 @@ def iterate():
                     disconnected_intervals[l1].components.append(Interval(a - delta, b + delta, 0, 0, [], color))
             disconnected_intervals[l1].combine(3e-2) # (5e-2)
     
-    for i in range(len(disconnected_intervals)):
-        disconnected_intervals[i].combine()
-        print(f"  Interval {i} Components: {len(disconnected_intervals[i].components)}")
-        for comp in disconnected_intervals[i].components:
-           print('    ', comp.a, comp.b)
-        print()
+    # for i in range(len(disconnected_intervals)):
+    #     disconnected_intervals[i].combine()
+    #     print(f"  Interval {i} Components: {len(disconnected_intervals[i].components)}")
+    #     for comp in disconnected_intervals[i].components:
+    #        print('    ', comp.a, comp.b)
+    #     print()
     
     total = 0
     for i in range(len(failed)):

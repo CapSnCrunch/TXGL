@@ -110,6 +110,15 @@ def expand_interval(n, delta = 5e-3):
         n: Index of interval in disconnected_intervals to expand
         delta: Padding on patches over images
     '''
+    for l2 in graph[n]:
+            # Create a new component around each component which was not contained
+            for comp in disconnected_intervals[l2].components:
+                if not disconnected_intervals[n].contains_image(DisconnectedInterval([comp]), graph[n][l2]):
+                    color = disconnected_intervals[n].components[0].color
+                    x, y = graph[n][l2] @ rp1_interval((comp.a - comp.e1) % np.pi, (comp.b + comp.e2) % np.pi)
+                    b, a = np.arctan2(y,x) # b, a?
+                    disconnected_intervals[n].components.append(Interval(a - delta, b + delta, 0, 0, [], color))
+            disconnected_intervals[n].combine(3e-2) # (5e-2)
 
 
 # Iterate the search on the global variable disconnected_intervals
@@ -152,7 +161,6 @@ def iterate():
         print('FOUND VALID INTERVALS')
     else:
         print('Number of failed containments', total)
-    return failed
 
 # MAIN LOOP
 iteration = 0
@@ -177,6 +185,9 @@ while True:
 
                 print()
                 print('Press SPACE to run iteration', iteration)
+            elif event.key == pygame.K_e and selected != -1:
+                expand_interval(selected)
+                failed = get_failures()
             elif event.key == pygame.K_UP and selected != -1:
                 print('COMPONENTS OF INTERVAL', selected)
                 for i, comp in enumerate(disconnected_intervals[selected].components):

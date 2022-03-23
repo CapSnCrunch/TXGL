@@ -104,10 +104,22 @@ def get_failures():
     
     return failed
 
+def expand_interval(n, delta = 5e-3):
+    '''Expand the n-th inteverval by exactly enough to contain all of its necessary images'''
+    '''
+        n: Index of interval in disconnected_intervals to expand
+        delta: Padding on patches over images
+    '''
+
+
 # Iterate the search on the global variable disconnected_intervals
 def iterate():
     ### PATCH SEARCH ###
-    # Extend a disconnected interval exactly the amount required by adding components around the images it must contain and combining
+    ''' Extend a disconnected interval exactly the amount required by adding components around the images it must contain and combining'''
+    '''
+        n: Index of interval in disconnected_intervals to expand
+        delta: Padding on patches over images
+    '''
     delta = 5e-3 # Extra space just over the image (3e-4)
 
     failed = {}
@@ -165,7 +177,12 @@ while True:
 
                 print()
                 print('Press SPACE to run iteration', iteration)
-            elif selected_error != None:
+            elif event.key == pygame.K_UP and selected != -1:
+                print('COMPONENTS OF INTERVAL', selected)
+                for i, comp in enumerate(disconnected_intervals[selected].components):
+                    print(' ', i, ' (' + str(comp.a) + ',', str(comp.b) + ')')
+                print()
+            elif event.key == pygame.K_DOWN and selected_error != None:
                 for i, comp in failed[selected]:
                     if selected_error == None or selected_error == comp:
                         # Draw the failed image of that component in the selected interval

@@ -112,14 +112,14 @@ def expand_interval(n, delta = 5e-3):
         delta: Padding on patches over images
     '''
     for l2 in graph[n]:
-            # Create a new component around each component which was not contained
-            for comp in disconnected_intervals[l2].components:
-                if not disconnected_intervals[n].contains_image(DisconnectedInterval([comp]), graph[n][l2]):
-                    color = disconnected_intervals[n].components[0].color
-                    x, y = graph[n][l2] @ rp1_interval((comp.a - comp.e1) % np.pi, (comp.b + comp.e2) % np.pi)
-                    b, a = np.arctan2(y,x) # b, a?
-                    disconnected_intervals[n].components.append(Interval(a - delta, b + delta, 0, 0, [], color))
-            disconnected_intervals[n].combine(3e-2) # (5e-2)
+        # Create a new component around each component which was not contained
+        for comp in disconnected_intervals[l2].components:
+            if not disconnected_intervals[n].contains_image(DisconnectedInterval([comp]), graph[n][l2]):
+                color = disconnected_intervals[n].components[0].color
+                x, y = graph[n][l2] @ rp1_interval((comp.a - comp.e1) % np.pi, (comp.b + comp.e2) % np.pi)
+                b, a = np.arctan2(y,x) # b, a?
+                disconnected_intervals[n].components.append(Interval(a - delta, b + delta, 0, 0, [], color))
+        disconnected_intervals[n].combine(3e-2) # (5e-2)
 
 
 # Iterate the search on the global variable disconnected_intervals
@@ -215,8 +215,8 @@ while True:
             print(selected, selected_error)
             h = int(height * 0.1)
             dh = int((height * 0.65) / len(disconnected_intervals))
-            if width * 0.04 < cursor[0] < width * 0.11 and height * 0.1 - dh/2 < cursor[1] < dh * (len(disconnected_intervals) + 1):
-                selected = (cursor[1] - height * 0.1) // dh
+            if width * 0.04 < cursor[0] < width * 0.11 and height * 0.1 - dh/2 < cursor[1] < height * 0.75:
+                selected = int((cursor[1] - height * 0.1 + dh/2) // dh)
                 selected_error = None
                 #if failed != {}:
                 #    print(failed[selected])
@@ -239,12 +239,6 @@ while True:
 
     # DRAW DEBUG WINDOW
     win.fill((255, 255, 255))
-
-    # width * 0.04 < cursor[0] < width * 0.11 and height * 0.1 - dh/2 < cursor[1] < height * 0.65:
-    dh = int((height * 0.65) / len(disconnected_intervals))
-    #pygame.draw.rect(win, (0,0,0), (width * 0.04, height * 0.1 - dh/2, width * 0.07, height * 0.75))
-    for i in range(len(disconnected_intervals)):
-        pygame.draw.line(win, (0,0,0), (width * 0.02, height * 0.1 + dh * i - dh/2), (width * 0.13, height * 0.1 + dh * i - dh/2), 1)
 
     # TITLE
     title = titleFont.render('Texas Experimental Geometry Lab', False, (0, 0, 0))
@@ -324,7 +318,17 @@ while True:
 
     # INTERVAL COMPONENT VALUES
     if selected != -1:
-        win.blit(titleFont.render('Interval ' + str(selected), False, (0, 0, 0)), (width * 0.02, height * 0.73))
+        # Display which interval is selected and what it maps into
+        map_locations = ''
+        for i in range(len(graph[selected])):
+            if i == len(graph[selected]) - 1:
+                map_locations += ' ' + str(list(graph[selected].keys())[i])
+            else:
+                map_locations += ' ' + str(list(graph[selected].keys())[i]) + ', '
+        win.blit(titleFont.render('Interval ' + str(selected) + ' (maps into' + map_locations + ')', False, (0, 0, 0)), (width * 0.02, height * 0.73))
+    
+        # Display the interval components
+
     else:
         win.blit(titleFont.render('No Interval Selected', False, (0, 0, 0)), (width * 0.02, height * 0.73))
 

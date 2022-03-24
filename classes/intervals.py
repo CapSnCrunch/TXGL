@@ -151,23 +151,93 @@ class DisconnectedInterval():
         for comp in self.components:
             comp.draw_image(ax, mat)
 
-    def combine(self, reach = 0):
+    def all_rp1(self):
+        '''Check if all of RP1 is covered by the components, return None if they do, 
+        otherwise, return a point alpha not covered by the components'''
+        self.sort()
+        for i in range(len(self.components)):
+            comp1 = self.components[i]
+            comp2 = self.components[(i + 1) % len(self.components)]
+            if comp1.intersects(comp2, 0):
+                continue
+            else:
+                return (comp1.b + comp2.a)/2
+        return None
+
+    def combine(self, reach = 0, debug = False):
         '''Combine / reduce intervals if they are overlapping
             (assumes that all intervals have the same name, mat, color)
             Will combine intervals if the gap between them is at most 'reach' '''
 
         self.sort() # Sort components into clockwise order
 
-        index = 0 # TODO FIX (infinite loop when A, B not conjugated)
-        while index < len(self.components) and len(self.components) > 1:
-            comp1 = self.components[index]
-            comp2 = self.components[(index + 1) % len(self.components)]
-            if comp1.intersects(comp2, reach):
-                comp1.a = min(comp1.a, comp2.a)
-                comp1.b = max(comp1.b, comp2.b)
-                self.components = self.components[:index+1] + self.components[index+2:]
-                index -= 1
-            index += 1
+        # if debug:
+        #     for comp in self.components:
+        #         print(comp.a, comp.b)
+
+        # # Shift and renormalize points so that there are no wrap arounds
+        # alpha = self.all_rp1()
+        # if alpha is not None:
+        #     for comp in self.components:
+        #         comp.a = (comp.a - alpha) % np.pi
+        #         comp.b = (comp.b - alpha) % np.pi
+
+        # self.sort()
+
+        # index = 0 # TODO FIX (infinite loop when A, B not conjugated)
+        # while index < len(self.components) and len(self.components) > 1:
+        #     if debug:
+        #         print('DEBUGGING')
+        #         import pdb; pdb.set_trace()
+        #     comp1 = self.components[index]
+        #     comp2 = self.components[(index + 1) % len(self.components)]
+        #     if comp1.intersects(comp2, reach):
+        #         comp1.b = max(comp1.b, comp2.b)
+        #         #self.components = self.components[:index+1] + self.components[index+2:]
+        #         self.components.pop((index+1) % len(self.components))
+        #         index -= 1
+        #     index += 1
+
+        # # Shift back
+        # if alpha is not None:
+        #     for comp in self.components:
+        #         comp.a = (comp.a + alpha) % np.pi
+        #         comp.b = (comp.b + alpha) % np.pi
+
+        # self.sort()
+
+        if self.components == []:
+            return
+
+        out = []
+        first_comp = self.components.pop(0)
+        (start, end) = first_comp.a, first_comp.b
+        for comp in self.components:
+            if comp.a <= end:
+                if comp.b > end:
+                    end = comp.b
+            else:
+                out.append(Interval(start % np.pi, end % np.pi, 0, 0, [], self.color))
+                (start, end) = comp.a, comp.b
+
+        if end > np.pi:
+            while out:
+                comp = out[0]
+                if comp.a + np.pi <= end:
+                    out.pop(0)
+                    comp_end = comp.a + np.piecewise
+                    if comp_end > end:
+                        end = comp_end
+                        break
+                else:
+                    break
+
+        if end >= start + np.pi:
+            out = [Interval(0, np.pi, 0, 0, [], self.color)]
+        else:
+            out.append(Interval(start % np.pi, end % np.pi, 0, 0, [], self.color))
+        
+        self.components = out
 
     def contains(self, other):
         '''Check if interval contains another disconnected interval'''

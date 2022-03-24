@@ -105,12 +105,13 @@ def get_failures():
     
     return failed
 
-def expand_interval(n, delta = 5e-3):
+def expand_interval(n, delta = 5e-3, debug = False):
     '''Expand the n-th inteverval by exactly enough to contain all of its necessary images'''
     '''
         n: Index of interval in disconnected_intervals to expand
         delta: Padding on patches over images
     '''
+    print('MAKING PATCHES')
     for l2 in graph[n]:
         # Create a new component around each component which was not contained
         for comp in disconnected_intervals[l2].components:
@@ -119,8 +120,9 @@ def expand_interval(n, delta = 5e-3):
                 x, y = graph[n][l2] @ rp1_interval((comp.a - comp.e1) % np.pi, (comp.b + comp.e2) % np.pi)
                 b, a = np.arctan2(y,x) # b, a?
                 disconnected_intervals[n].components.append(Interval(a - delta, b + delta, 0, 0, [], color))
-        disconnected_intervals[n].combine(3e-2) # (5e-2)
-
+                print('  ('+str(a-delta), str(b+delta)+')')
+    disconnected_intervals[n].combine(3e-2, debug) # (5e-2)
+    print()
 
 # Iterate the search on the global variable disconnected_intervals
 def iterate():
@@ -188,6 +190,9 @@ while True:
                 print('Press SPACE to run iteration', iteration)
             elif event.key == pygame.K_e and selected != -1:
                 expand_interval(selected)
+                failed = get_failures()
+            elif event.key == pygame.K_d and selected != -1:
+                expand_interval(selected, debug = True)
                 failed = get_failures()
             elif event.key == pygame.K_UP and selected != -1:
                 print('COMPONENTS OF INTERVAL', selected)
@@ -325,7 +330,7 @@ while True:
                 map_locations += ' ' + str(list(graph[selected].keys())[i])
             else:
                 map_locations += ' ' + str(list(graph[selected].keys())[i]) + ', '
-        win.blit(titleFont.render('Interval ' + str(selected) + ' (maps into' + map_locations + ')', False, (0, 0, 0)), (width * 0.02, height * 0.73))
+        win.blit(titleFont.render('Interval ' + str(selected) + ' (' +  map_locations + ' map into this )', False, (0, 0, 0)), (width * 0.02, height * 0.73))
     
         # Display the interval components
 

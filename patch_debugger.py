@@ -116,11 +116,11 @@ def expand_interval(n, delta = 5e-3, debug = False):
         # Create a new component around each component which was not contained
         for comp in disconnected_intervals[l2].components:
             if not disconnected_intervals[n].contains_image(DisconnectedInterval([comp]), graph[n][l2]):
-                color = disconnected_intervals[n].components[0].color
-                x, y = graph[n][l2] @ rp1_interval((comp.a - comp.e1) % np.pi, (comp.b + comp.e2) % np.pi)
-                b, a = np.arctan2(y,x) # b, a?
-                disconnected_intervals[n].components.append(Interval(a - delta, b + delta, 0, 0, [], color))
-                print('  ('+str(a-delta), str(b+delta)+')')
+                image = comp.get_image(graph[n][l2])
+                image.a -= delta
+                image.b += delta
+                disconnected_intervals[n].components.append(image)
+                print('  ('+str(image.a-delta), str(image.b+delta)+')')
     disconnected_intervals[n].combine(3e-2, debug) # (5e-2)
     print()
 
@@ -144,10 +144,10 @@ def iterate():
             for comp in disconnected_intervals[l2].components:
                 if not disconnected_intervals[l1].contains_image(DisconnectedInterval([comp]), graph[l1][l2]):
                     failed[l1] += [(l2, comp)]
-                    color = disconnected_intervals[l1].components[0].color
-                    x, y = graph[l1][l2] @ rp1_interval((comp.a - comp.e1) % np.pi, (comp.b + comp.e2) % np.pi)
-                    b, a = np.arctan2(y,x) # b, a?
-                    disconnected_intervals[l1].components.append(Interval(a - delta, b + delta, 0, 0, [], color))
+                    image = comp.get_image(graph[l1][l2])
+                    image.a -= delta
+                    image.b += delta
+                    disconnected_intervals[l1].components.append(image)
             disconnected_intervals[l1].combine(3e-2) # (5e-2)
     
     # for i in range(len(disconnected_intervals)):

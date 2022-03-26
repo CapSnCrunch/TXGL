@@ -171,9 +171,9 @@ class DisconnectedInterval():
 
         self.sort() # Sort components into clockwise order
 
-        # if debug:
-        #     for comp in self.components:
-        #         print(comp.a, comp.b)
+        if debug:
+            for comp in self.components:
+                print(comp.a, comp.b)
 
         # # Shift and renormalize points so that there are no wrap arounds
         # alpha = self.all_rp1()
@@ -217,7 +217,10 @@ class DisconnectedInterval():
                 if comp.b > end:
                     end = comp.b
             else:
-                out.append(Interval(start % np.pi, end % np.pi, 0, 0, [], self.color))
+                if end < start:
+                    out.append(Interval(start, end + np.pi, 0, 0, [], self.color))
+                else:
+                    out.append(Interval(start, end, 0, 0, [], self.color))
                 (start, end) = comp.a, comp.b
 
         if end > np.pi:
@@ -225,7 +228,7 @@ class DisconnectedInterval():
                 comp = out[0]
                 if comp.a + np.pi <= end:
                     out.pop(0)
-                    comp_end = comp.a + np.piecewise
+                    comp_end = comp.a + np.pi
                     if comp_end > end:
                         end = comp_end
                         break
@@ -235,9 +238,14 @@ class DisconnectedInterval():
         if end >= start + np.pi:
             out = [Interval(0, np.pi, 0, 0, [], self.color)]
         else:
-            out.append(Interval(start % np.pi, end % np.pi, 0, 0, [], self.color))
+            out.append(Interval(start, end, 0, 0, [], self.color))
         
         self.components = out
+
+        if debug:
+            print('done')
+            for comp in self.components:
+                print(comp.a, comp.b)
 
     def contains(self, other):
         '''Check if interval contains another disconnected interval'''

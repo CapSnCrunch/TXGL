@@ -171,10 +171,6 @@ class DisconnectedInterval():
 
         self.sort() # Sort components into clockwise order
 
-        if debug:
-            for comp in self.components:
-                print(comp.a, comp.b)
-
         # # Shift and renormalize points so that there are no wrap arounds
         # alpha = self.all_rp1()
         # if alpha is not None:
@@ -209,22 +205,35 @@ class DisconnectedInterval():
         if self.components == []:
             return
 
+        if debug:
+            print()
+            print('components (including patches)')
+            for i, comp in enumerate(self.components):
+                print(i, comp.a, comp.b)
+
         out = []
         first_comp = self.components.pop(0)
-        (start, end) = first_comp.a, first_comp.b
+        start, end = first_comp.a, first_comp.b
+        if debug:
+            print()
+            print('first', first_comp.a, first_comp.b)
+            print()
         for comp in self.components:
+            if debug:
+                print('start', start, 'end', end)
+            if comp.a > comp.b:
+                comp.b += np.pi
             if comp.a <= end:
                 if comp.b > end:
                     end = comp.b
             else:
-                if end < start:
-                    out.append(Interval(start, end + np.pi, 0, 0, [], self.color))
-                else:
-                    out.append(Interval(start, end, 0, 0, [], self.color))
+                out.append(Interval(start, end, 0, 0, [], self.color))
                 (start, end) = comp.a, comp.b
 
         if end > np.pi:
             while out:
+                if debug:
+                    print('start', start, 'end', end)
                 comp = out[0]
                 if comp.a + np.pi <= end:
                     out.pop(0)
@@ -243,7 +252,8 @@ class DisconnectedInterval():
         self.components = out
 
         if debug:
-            print('done')
+            print()
+            print('components after modding')
             for comp in self.components:
                 print(comp.a, comp.b)
 

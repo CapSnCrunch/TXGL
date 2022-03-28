@@ -102,7 +102,6 @@ def get_failures():
             for comp in disconnected_intervals[l2].components:
                 if not disconnected_intervals[l1].contains_image(DisconnectedInterval([comp]), graph[l1][l2]):
                     failed[l1] += [(l2, comp)]
-    
     return failed
 
 def expand_interval(n, delta = 5e-3, debug = False):
@@ -111,16 +110,20 @@ def expand_interval(n, delta = 5e-3, debug = False):
         n: Index of interval in disconnected_intervals to expand
         delta: Padding on patches over images
     '''
+    print('num components before', len(disconnected_intervals[n].components))
     print('MAKING PATCHES')
+    new_components = []
     for l2 in graph[n]:
         # Create a new component around each component which was not contained
         for comp in disconnected_intervals[l2].components:
             if not disconnected_intervals[n].contains_image(DisconnectedInterval([comp]), graph[n][l2]):
                 image = comp.get_image(graph[n][l2])
                 image.a -= delta
-                image.b += delta
-                disconnected_intervals[n].components.append(image)
-                print('  ('+str(image.a-delta), str(image.b+delta)+')')
+                image.b += delta    
+                new_components.append(image)
+                print('  ('+str(image.a), str(image.b)+')')
+    disconnected_intervals[n].components += new_components
+    print('num components after', len(disconnected_intervals[n].components))
     disconnected_intervals[n].combine(3e-2, debug) # (5e-2)
     print()
 
@@ -188,17 +191,26 @@ while True:
 
                 print()
                 print('Press SPACE to run iteration', iteration)
+                
             elif event.key == pygame.K_e and selected != -1:
                 expand_interval(selected)
                 failed = get_failures()
+
             elif event.key == pygame.K_d and selected != -1:
                 expand_interval(selected, debug = True)
                 failed = get_failures()
+
             elif event.key == pygame.K_UP and selected != -1:
                 print('COMPONENTS OF INTERVAL', selected)
                 for i, comp in enumerate(disconnected_intervals[selected].components):
                     print(' ', i, ' (' + str(comp.a) + ',', str(comp.b) + ')')
                 print()
+                # print('IMAGES THAT FAILED CONTAINMENT')
+                # for i, comp in enumerate(failed[selected]):
+                #     image = comp.get_image(graph[n][l2])
+                #     print(' ', i, ' (' + str(comp[1].a) + ',', str(comp[1].b) + ')')
+                # print()
+
             elif event.key == pygame.K_DOWN and selected_error != None:
                 for i, comp in failed[selected]:
                     if selected_error == None or selected_error == comp:

@@ -76,7 +76,7 @@ words = allwords(graph, 6, 6)
 #print(len(words))
 
 # CREATE INITIAL INTERVALS OF SIZE eps
-eps = 2e-4
+eps = 2e-5
 disconnected_intervals = []
 for i in range(len(words)):
     intervals = []
@@ -85,7 +85,7 @@ for i in range(len(words)):
     color = colors[i]
     for j in range(len(words[i])):
         s = np.arctan2(np.linalg.svd(words[i][j])[0][1][0], np.linalg.svd(words[i][j])[0][0][0])
-        intervals.append(Interval(s - eps, s + eps, 0, 0, [], color))
+        intervals.append(Interval(s - eps, s + eps, color))
     initial_intervals = DisconnectedInterval(intervals)
     initial_intervals.combine()
     disconnected_intervals.append(initial_intervals)
@@ -104,7 +104,7 @@ def get_failures():
                     failed[l1] += [(l2, comp)]
     return failed
 
-def expand_interval(n, delta = 5e-3, debug = False):
+def expand_interval(n, delta = 5e-4, debug = False):
     '''Expand the n-th inteverval by exactly enough to contain all of its necessary images'''
     '''
         n: Index of interval in disconnected_intervals to expand
@@ -135,7 +135,7 @@ def iterate():
         n: Index of interval in disconnected_intervals to expand
         delta: Padding on patches over images
     '''
-    delta = 5e-3 # Extra space just over the image (3e-4)
+    delta = 5e-4 # Extra space just over the image (3e-4)
 
     failed = {}
     # Look at a particular L1 disconnected interval

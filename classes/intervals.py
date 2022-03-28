@@ -4,30 +4,25 @@ from matplotlib.patches import Circle, Arc
 from classes.interval_funcs import *
 
 class Interval():
-    def __init__(self, a, b, name, mat, letters, color):
+    def __init__(self, a, b, color):
         # TODO We can probably get rid of e1, e2, mat, and letters
         self.a = a % np.pi
         self.b = b % np.pi
-        self.e1 = 0
-        self.e2 = 0
 
-        self.name = name
-        self.mat = mat
         self.color = color
-        self.letters = letters
 
         self.nearest_interval_a = None
         self.nearest_interval_b = None
 
     def draw(self, ax):
         '''Draw the interval'''
-        theta2, theta1 = get_arc_params(rp1_interval((self.a - self.e1) % np.pi, (self.b + self.e2) % np.pi))
+        theta2, theta1 = get_arc_params(rp1_interval(self.a % np.pi, self.b % np.pi))
         print('drawing between', theta1, theta2)
         ax.add_patch(Arc((0,0), 2., 2., theta1 = theta1, theta2 = theta2, color = self.color, linewidth=10))
 
     def draw_image(self, ax, mat):
         '''Draw image of the interval under mat'''
-        I = rp1_interval((self.a - self.e1) % np.pi, (self.b + self.e2) % np.pi)
+        I = rp1_interval(self.a % np.pi, self.b % np.pi)
         '''for mat in self.letters:
             if not np.allclose(mat, np.linalg.inv(self.mat)):
                 theta2, theta1 = get_arc_params(mat @ I)
@@ -41,7 +36,7 @@ class Interval():
 
     def get_image(self, mat):
         '''Get image of interval under a given matrix, return the new interval'''
-        x, y = mat @ rp1_interval((self.a - self.e1) % np.pi, (self.b + self.e2) % np.pi)
+        x, y = mat @ rp1_interval(self.a % np.pi, self.b % np.pi)
 
         if np.linalg.det(mat) < 0:
             b, a = np.arctan2(y, x)
@@ -50,15 +45,15 @@ class Interval():
             a, b = np.arctan2(y, x)
             a, b = a % np.pi, b % np.pi
         # return (a, b)
-        return Interval(a, b, 0, 0, [], self.color)
+        return Interval(a, b, self.color)
 
     def contains(self, other):
         '''Check if intervals contains another interval'''
         ta = 360
 
         # Find the angles vectors occur at in order to compare
-        b, a = get_arc_params(rp1_interval(self.a - self.e1, self.b + self.e2))
-        d, c = get_arc_params(rp1_interval(other.a - other.e1, other.b + other.e2))
+        b, a = get_arc_params(rp1_interval(self.a, self.b))
+        d, c = get_arc_params(rp1_interval(other.a, other.b))
 
         if a > b:
             if c > d:
@@ -81,10 +76,10 @@ class Interval():
         #print(' ', self.b, self.a, other.b, other.a)
 
         # Get interval we want to take the image of as a pair of vectors
-        I = rp1_interval(other.a - other.e1, other.b + other.e2)
+        I = rp1_interval(other.a, other.b)
 
         # Find the angles vectors occur at in order to compare
-        b, a = get_arc_params(rp1_interval(self.a - self.e1, self.b + self.e2))
+        b, a = get_arc_params(rp1_interval(self.a, self.b))
         
         if np.linalg.det(mat) < 1:
             c, d = get_arc_params(mat @ I)
@@ -112,7 +107,7 @@ class Interval():
     def nearest_endpoints(self, intervals):
         '''Find the intervals which are closest to self.a and self.b and assign them to
             nearest_interval_a and nearest_interval_b respectively for later use in expansion'''
-        a, b = (self.a - self.e1) % np.pi, (self.b + self.e2) % np.pi
+        a, b = self.a % np.pi, self.b % np.pi
         searching = True
         eps = 1e-5
         i = eps
@@ -130,7 +125,7 @@ class Interval():
             i += eps
     
     def __str__(self):
-        return str(self.a) + ' ' + str(self.b)
+        return '(' + str(self.a) + ', ' + str(self.b) + ')'
 
 class DisconnectedInterval():
     def __init__(self, components = []):
@@ -227,17 +222,22 @@ class DisconnectedInterval():
                 if comp.b > end:
                     end = comp.b
             else:
-                out.append(Interval(start, end, 0, 0, [], self.color))
+                out.append(Interval(start, end, self.color))
                 (start, end) = comp.a, comp.b
+                if debug:
+                    print('out')
+                    for comp in out:
+                        print('  ', comp.a, comp.b)
 
         if end > np.pi:
             while out:
                 if debug:
+                    print('wrap around case')
                     print('start', start, 'end', end)
                 comp = out[0]
                 if comp.a + np.pi <= end:
                     out.pop(0)
-                    comp_end = comp.a + np.pi
+                    comp_end = comp.b + np.pi
                     if comp_end > end:
                         end = comp_end
                         break
@@ -245,9 +245,10 @@ class DisconnectedInterval():
                     break
 
         if end >= start + np.pi:
-            out = [Interval(0, np.pi, 0, 0, [], self.color)]
+            out = [Interval(0, np.pi, self.color)]
+            print('COMPONENT IS ALL OF RP1')
         else:
-            out.append(Interval(start, end, 0, 0, [], self.color))
+            out.append(Interval(start, end, self.color))
         
         self.components = out
 
@@ -289,14 +290,14 @@ class DisconnectedInterval():
         self.components = sorted(self.components, key = lambda comp: comp.a)
 
 if __name__ == '__main__':
-    i1 = Interval(0, 0.2, 0, 0, [], np.array([1,0,0]))
-    i2 = Interval(0.3, 0.4, 1, 0, [], np.array([0,1,0]))
-    i3 = Interval(0.35, 0.75, 2, 0, [], np.array([0,0,1]))
-    i4 = Interval(0.7, 1, 2, 0, [], np.array([1,0,0]))
+    i1 = Interval(0, 0.2, np.array([1,0,0]))
+    i2 = Interval(0.3, 0.4, np.array([0,1,0]))
+    i3 = Interval(0.35, 0.75, np.array([0,0,1]))
+    i4 = Interval(0.7, 1, np.array([1,0,0]))
     di = DisconnectedInterval([i1, i2, i3, i4])
 
-    j1 = Interval(0.1, 0.19, 0, 0, [], np.array([0,0,1]))
-    j2 = Interval(0.7, 0.8, 2, 0, [], np.array([0,0,1]))
+    j1 = Interval(0.1, 0.19, np.array([0,0,1]))
+    j2 = Interval(0.7, 0.8, np.array([0,0,1]))
     dj = DisconnectedInterval([j1, j2])
 
     A = np.array([[0, 1],

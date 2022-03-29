@@ -5,6 +5,7 @@ from classes.intervals import *
 from classes.interval_funcs import *
 from classes.group_funcs import *
 from classes.graph_funcs import *
+from groups import group
 from colors import colors
 
 ### CREATE DEBUGGER WINDOW ###
@@ -16,72 +17,18 @@ pygame.font.init()
 font = pygame.font.SysFont('Roboto', 18)
 titleFont = pygame.font.SysFont('Roboto', 25)
 
-### CREATE REPRESENTATION ###
-orders = [2, 3] # Doesn't work for [3, m]
+### GET REPRESENTATION ###
+graph = group('triangle')
 
-generators = []
-for order in orders:
-    theta = np.pi / order
-    generators += [np.array([[np.cos(theta), -np.sin(theta)], [np.sin(theta), np.cos(theta)]])]
-
-l = 1.5 # Interesting: if we increase this, it decreases the number of search steps
-C = np.array([[l, 0],
-              [0, 1/l]])
-
-A, B = generators
-
-A = np.linalg.inv(C) @ A @ C
-B = C @ B @ np.linalg.inv(C)
-
-# For order [2, 3]
-graph = {0: {1: B}, 1: {0: A, 2: B}, 2: {0 : A}}
-#graph = {0: {1: B, 2: B @ B}, 1: {0: A}, 2: {0 : A}}
-#graph = {0: {1: B, 1: B @ B}, 1: {0: A}}
-
-# For orders [2, 4]
-#graph = {0: {1: B}, 1: {0: A, 2: B}, 2: {0: A, 3: B}, 3: {0: A}}
-
-# graph = generate_graph(orders, [A, B])
-#print(graph)
-
-# words 5, eps 2e-4, delta 1e-3, combine 1e-4
-# Triangle Group <a, b, c | a^2 = b^2 = c^2 = 1, (ab)^3 = (cb)^3 = (ac)^4 = 1>
-A = np.array([[ 0.923879532511287, -0.217284326304659],
-               [-0.673986071141597, -0.923879532511287]])
-B = np.array([[0.,                1.219308768593441],
-               [0.820136806818482, 0.               ]])
-C = np.array([[ 0.923879532511287,  0.21728432630466 ],
-               [ 0.673986071141597, -0.923879532511286]])
-
-graph = {0: {},
-            1: {4: B, 5: C},
-            2: {6: A, 7: C},
-            3: {8: A, 9: B},
-            4: {10: A, 7: C},
-            5: {11: A, 9: B},
-            6: {1: B, 5: C},
-            7: {8: A, 12: B},
-            8: {4: B, 13: C},
-            9: {6: A, 12: C},
-            10: {14: C},
-            11: {4: B, 15: C},
-            12: {16: A},
-            13: {16: A, 9: B},
-            14: {11: A, 12: B},
-            15: {17: B},
-            16: {10: B, 13: C},
-            17: {10: A, 12: C}}
-
+print('Finding interval starting points...')
 words = allwords(graph, 6, 6)
-#print(len(words))
+print('Initializing intervals...')
 
 # CREATE INITIAL INTERVALS OF SIZE eps
-eps = 2e-5
+eps = 5e-3
 disconnected_intervals = []
 for i in range(len(words)):
     intervals = []
-    #color = np.array([np.random.uniform(0,0.5), np.random.uniform(0,0.5), np.random.uniform(0,0.5)])
-    #color = np.array([0.9*(i==0), 0.9*(i==1), 0.9*(i==2)])
     color = colors[i]
     for j in range(len(words[i])):
         s = np.arctan2(np.linalg.svd(words[i][j])[0][1][0], np.linalg.svd(words[i][j])[0][0][0])
@@ -89,6 +36,8 @@ for i in range(len(words)):
     initial_intervals = DisconnectedInterval(intervals)
     initial_intervals.combine()
     disconnected_intervals.append(initial_intervals)
+
+print('Intervals created.')
 
 # Get the current failing images
 def get_failures():
@@ -104,7 +53,7 @@ def get_failures():
                     failed[l1] += [(l2, comp)]
     return failed
 
-def expand_interval(n, delta = 5e-4, debug = False):
+def expand_interval(n, delta = 5e-3, debug = False):
     '''Expand the n-th inteverval by exactly enough to contain all of its necessary images'''
     '''
         n: Index of interval in disconnected_intervals to expand
@@ -135,7 +84,7 @@ def iterate():
         n: Index of interval in disconnected_intervals to expand
         delta: Padding on patches over images
     '''
-    delta = 5e-4 # Extra space just over the image (3e-4)
+    delta = 5e-3 # Extra space just over the image (3e-4)
 
     failed = {}
     # Look at a particular L1 disconnected interval
@@ -152,13 +101,6 @@ def iterate():
                     image.b += delta
                     disconnected_intervals[l1].components.append(image)
             disconnected_intervals[l1].combine(3e-2) # (5e-2)
-    
-    # for i in range(len(disconnected_intervals)):
-    #     disconnected_intervals[i].combine()
-    #     print(f"  Interval {i} Components: {len(disconnected_intervals[i].components)}")
-    #     for comp in disconnected_intervals[i].components:
-    #        print('    ', comp.a, comp.b)
-    #     print()
     
     total = 0
     for i in range(len(failed)):
@@ -205,11 +147,6 @@ while True:
                 for i, comp in enumerate(disconnected_intervals[selected].components):
                     print(' ', i, ' (' + str(comp.a) + ',', str(comp.b) + ')')
                 print()
-                # print('IMAGES THAT FAILED CONTAINMENT')
-                # for i, comp in enumerate(failed[selected]):
-                #     image = comp.get_image(graph[n][l2])
-                #     print(' ', i, ' (' + str(comp[1].a) + ',', str(comp[1].b) + ')')
-                # print()
 
             elif event.key == pygame.K_DOWN and selected_error != None:
                 for i, comp in failed[selected]:
@@ -231,8 +168,8 @@ while True:
             cursor = list(pygame.mouse.get_pos())
             print(selected, selected_error)
             h = int(height * 0.1)
-            dh = int((height * 0.65) / len(disconnected_intervals))
-            if width * 0.04 < cursor[0] < width * 0.11 and height * 0.1 - dh/2 < cursor[1] < height * 0.75:
+            dh = int((height * 0.80) / len(disconnected_intervals))
+            if width * 0.04 < cursor[0] < width * 0.11 and height * 0.1 - dh/2 < cursor[1] < height * 0.9:
                 selected = int((cursor[1] - height * 0.1 + dh/2) // dh)
                 selected_error = None
                 #if failed != {}:
@@ -268,7 +205,7 @@ while True:
 
     # INTERVALS
     h = int(height * 0.1)
-    dh = int((height * 0.65) / len(disconnected_intervals))
+    dh = int((height * 0.80) / len(disconnected_intervals))
     for i in range(len(disconnected_intervals)):
         # Interval Indicators
         win.blit(font.render(str(i), False, (0, 0, 0)), (width * 0.02, h + dh*i - 3))
@@ -336,17 +273,26 @@ while True:
     # INTERVAL COMPONENT VALUES
     if selected != -1:
         # Display which interval is selected and what it maps into
-        map_locations = ''
-        for i in range(len(graph[selected])):
-            if i == len(graph[selected]) - 1:
-                map_locations += ' ' + str(list(graph[selected].keys())[i])
+        map_locations = []
+        for vertex, edges in graph.items():
+            if selected in list(edges.keys()):
+                map_locations.append(vertex)
+        map_string = ''
+        for i, n in enumerate(map_locations):
+            if i < len(map_locations) - 2:
+                map_string += f'{n}, '
+            elif i == len(map_locations) - 2:
+                map_string += f'{n}, and '
             else:
-                map_locations += ' ' + str(list(graph[selected].keys())[i]) + ', '
-        win.blit(titleFont.render('Interval ' + str(selected) + ' (' +  map_locations + ' map into this )', False, (0, 0, 0)), (width * 0.02, height * 0.73))
+                map_string += f'{n}'
+        if map_string == '':
+            map_string = 'nothing'
+        win.blit(titleFont.render(f'Interval {selected}', False, (0, 0, 0)), (width * 0.02, height * 0.9))
+        win.blit(font.render(f'maps into {map_string}', False, (0, 0, 0)), (width * 0.12, height * 0.905))
     
         # Display the interval components
 
     else:
-        win.blit(titleFont.render('No Interval Selected', False, (0, 0, 0)), (width * 0.02, height * 0.73))
+        win.blit(titleFont.render('No Interval Selected', False, (0, 0, 0)), (width * 0.02, height * 0.9))
 
     pygame.display.update()

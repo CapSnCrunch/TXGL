@@ -21,7 +21,7 @@ titleFont = pygame.font.SysFont('Roboto', 25)
 graph = group('triangle')
 
 print('Finding interval starting points...')
-words = allwords(graph, 6, 6)
+words = allwords(graph, 4, 4)
 print('Initializing intervals...')
 
 # CREATE INITIAL INTERVALS OF SIZE eps
@@ -112,7 +112,8 @@ def iterate():
 
 # MAIN LOOP
 iteration = 0
-selected = -1
+selected_interval = -1
+selected_failure = -1
 selected_error = None
 failed = get_failures()
 print()
@@ -134,50 +135,52 @@ while True:
                 print()
                 print('Press SPACE to run iteration', iteration)
                 
-            elif event.key == pygame.K_e and selected != -1:
-                expand_interval(selected)
+            elif event.key == pygame.K_e and selected_failure != -1:
+                expand_interval(selected_failure)
                 failed = get_failures()
 
-            elif event.key == pygame.K_d and selected != -1:
-                expand_interval(selected, debug = True)
+            elif event.key == pygame.K_d and selected_failure != -1:
+                expand_interval(selected_failure, debug = True)
                 failed = get_failures()
 
-            elif event.key == pygame.K_UP and selected != -1:
-                print('COMPONENTS OF INTERVAL', selected)
-                for i, comp in enumerate(disconnected_intervals[selected].components):
+            elif event.key == pygame.K_UP and selected_failure != -1:
+                print('COMPONENTS OF INTERVAL', selected_failure)
+                for i, comp in enumerate(disconnected_intervals[selected_failure].components):
                     print(' ', i, ' (' + str(comp.a) + ',', str(comp.b) + ')')
                 print()
 
             elif event.key == pygame.K_DOWN and selected_error != None:
-                for i, comp in failed[selected]:
+                for i, comp in failed[selected_failure]:
                     if selected_error == None or selected_error == comp:
                         # Draw the failed image of that component in the selected interval
                         # x, y = graph[selected][i] @ rp1_interval((comp.a - comp.e1) % np.pi, (comp.b + comp.e2) % np.pi)
                         # b, a = np.arctan2(y, x) # b, a?
                         # a, b = a % np.pi, b % np.pi
 
-                        image = comp.get_image(graph[selected][i])
+                        image = comp.get_image(graph[selected_failure][i])
 
                         print('  IMAGE OF FAILED COMPONENT', image.a, image.b)
                     
                         print('  SHOULD BE CONTAINED IN')
-                        for comp2 in disconnected_intervals[selected].components:
+                        for comp2 in disconnected_intervals[selected_failure].components:
                             print('    ', comp2.a, comp2.b)
         
         if event.type == pygame.MOUSEBUTTONDOWN:
             cursor = list(pygame.mouse.get_pos())
-            print(selected, selected_error)
             h = int(height * 0.1)
             dh = int((height * 0.80) / len(disconnected_intervals))
             if width * 0.04 < cursor[0] < width * 0.11 and height * 0.1 - dh/2 < cursor[1] < height * 0.9:
-                selected = int((cursor[1] - height * 0.1 + dh/2) // dh)
+                selected_interval = int((cursor[1] - height * 0.1 + dh/2) // dh)
+                selected_failure = -1
                 selected_error = None
-                #if failed != {}:
-                #    print(failed[selected])
-            elif selected != -1 and failed != {}:
+            if width * 0.11 < cursor[0] < width * 0.14 and height * 0.1 - dh/2 < cursor[1] < height * 0.9:
+                selected_interval = -1
+                selected_failure = int((cursor[1] - height * 0.1 + dh/2) // dh)
+                selected_error = None
+            elif selected_failure != -1 and failed != {}:
                 # Check if we are selecting a particular image
                 deselect = True
-                for i, comp in failed[selected]:
+                for i, comp in failed[selected_failure]:
                     start = ((width * 0.75) / np.pi) * comp.a + width * 0.15
                     end = ((width * 0.75) / np.pi) * comp.b + width * 0.15
                     if start < end and (start - 2) < cursor[0] < (end + 2) and (h + dh*i - 10) < cursor[1] < (h + dh*i + 10):
@@ -189,7 +192,7 @@ while True:
                 if deselect == True and selected_error != None:
                     selected_error = None
                 elif deselect == True and selected_error == None:
-                    selected = -1
+                    selected_failure = -1
 
     # DRAW DEBUG WINDOW
     win.fill((255, 255, 255))
@@ -209,8 +212,10 @@ while True:
     for i in range(len(disconnected_intervals)):
         # Interval Indicators
         win.blit(font.render(str(i), False, (0, 0, 0)), (width * 0.02, h + dh*i - 3))
-        if i == selected:
+        if i == selected_interval:
             pygame.draw.line(win, (230, 230, 230), (width * 0.04, h + dh*i), (width * 0.11, h + dh*i), 20)
+        if i == selected_failure:
+            pygame.draw.circle(win, (250, 200, 200), (width * 0.122, h + dh*(selected_failure) + 2), 10)
         pygame.draw.line(win, disconnected_intervals[i].color * 255, (width * 0.05, h + dh*i), (width * 0.1, h + dh*i), 10)
 
         # Number of Failures
@@ -218,7 +223,7 @@ while True:
             win.blit(font.render(str(len(failed[i])), False, (255, 0, 0)), (width * 0.12, h + dh*i - 3))
 
         # Interval Components
-        pygame.draw.line(win, (200, 200, 200), (width * 0.15, h + dh*i), (width * 0.9, h + dh*i), 1 + (selected == i) * 2)
+        pygame.draw.line(win, (200, 200, 200), (width * 0.15, h + dh*i), (width * 0.9, h + dh*i), 1 + (selected_failure == i) * 2)
         for comp in disconnected_intervals[i].components:
             start = ((width * 0.75) / np.pi) * comp.a + width * 0.15
             end = ((width * 0.75) / np.pi) * comp.b + width * 0.15
@@ -233,9 +238,33 @@ while True:
         # Number of Components
         win.blit(font.render(str(len(disconnected_intervals[i].components)), False, (0, 0, 0)), (width * 0.95, h + dh*i - 3))
     
-    # SELECTED ERROR
-    if selected != -1 and failed != {}:
-        for i, comp in failed[selected]:
+    # SELECTED INTERVAL (DRAW THE IMAGES OF THE CURRENT INTERVAL)
+    if selected_interval != -1:
+        # Get which intervals the selected interval maps into
+        map_locations = []
+        for vertex, edges in graph.items():
+            if selected_interval in list(edges.keys()):
+                map_locations.append(vertex)
+        
+        color = disconnected_intervals[selected_interval].color * 255
+        for i in map_locations:
+            for comp in disconnected_intervals[selected_interval].components:
+                image = comp.get_image(graph[i][selected_interval])
+
+                start = ((width * 0.75) / np.pi) * image.a + width * 0.15
+                end = ((width * 0.75) / np.pi) * image.b + width * 0.15
+
+                if start < end:
+                    pygame.draw.line(win, color * 0.5, (np.floor(start), h + dh*i), (np.ceil(end), h + dh*i), 5)
+                else:
+                    pygame.draw.line(win, color * 0.5, (np.floor(start), h + dh*i), (width * 0.9, h + dh*i), 5)
+                    pygame.draw.line(win, color * 0.5, (width * 0.15, h + dh*i), (np.ceil(end), h + dh*i), 5)
+                pygame.draw.line(win, color * 0.5, (np.floor(start), h + dh*i), (np.floor(start)+1, h + dh*i), 7)
+                pygame.draw.line(win, color * 0.5, (np.ceil(end) + 1, h + dh*i), (np.ceil(end), h + dh*i), 7)
+
+    # SELECTED FAILURE (DRAW WHICH IMAGES SHOULD HAVE BEEN CONTAINED)
+    if selected_failure != -1 and failed != {}:
+        for i, comp in failed[selected_failure]:
             alpha = 0.5
             if selected_error == None or selected_error == comp:
                 alpha = 1
@@ -257,25 +286,25 @@ while True:
                 # b, a = np.arctan2(y, x) # b, a?
                 # a, b = a % np.pi, b % np.pi
 
-                image = comp.get_image(graph[selected][i])
+                image = comp.get_image(graph[selected_failure][i])
 
                 start = ((width * 0.75) / np.pi) * image.a + width * 0.15
                 end = ((width * 0.75) / np.pi) * image.b + width * 0.15
 
                 if start < end:
-                    pygame.draw.line(win, (150, 0, 0), (np.floor(start), h + dh*selected), (np.ceil(end), h + dh*selected), 5)
+                    pygame.draw.line(win, (150, 0, 0), (np.floor(start), h + dh*selected_failure), (np.ceil(end), h + dh*selected_failure), 5)
                 else:
-                    pygame.draw.line(win, (150, 0, 0), (np.floor(start), h + dh*selected), (width * 0.9, h + dh*selected), 5)
-                    pygame.draw.line(win, (150, 0, 0), (width * 0.15, h + dh*selected), (np.ceil(end), h + dh*selected), 5)
-                pygame.draw.line(win, (150, 0, 0), (np.floor(start), h + dh*selected), (np.floor(start)+1, h + dh*selected), 7)
-                pygame.draw.line(win, (150, 0, 0), (np.ceil(end) + 1, h + dh*selected), (np.ceil(end), h + dh*selected), 7)
+                    pygame.draw.line(win, (150, 0, 0), (np.floor(start), h + dh*selected_failure), (width * 0.9, h + dh*selected_failure), 5)
+                    pygame.draw.line(win, (150, 0, 0), (width * 0.15, h + dh*selected_failure), (np.ceil(end), h + dh*selected_failure), 5)
+                pygame.draw.line(win, (150, 0, 0), (np.floor(start), h + dh*selected_failure), (np.floor(start)+1, h + dh*selected_failure), 7)
+                pygame.draw.line(win, (150, 0, 0), (np.ceil(end) + 1, h + dh*selected_failure), (np.ceil(end), h + dh*selected_failure), 7)
 
     # INTERVAL COMPONENT VALUES
-    if selected != -1:
+    if selected_interval != -1 or selected_failure != -1:
         # Display which interval is selected and what it maps into
         map_locations = []
         for vertex, edges in graph.items():
-            if selected in list(edges.keys()):
+            if max(selected_interval, selected_failure) in list(edges.keys()):
                 map_locations.append(vertex)
         map_string = ''
         for i, n in enumerate(map_locations):
@@ -287,7 +316,7 @@ while True:
                 map_string += f'{n}'
         if map_string == '':
             map_string = 'nothing'
-        win.blit(titleFont.render(f'Interval {selected}', False, (0, 0, 0)), (width * 0.02, height * 0.9))
+        win.blit(titleFont.render(f'Interval {max(selected_interval, selected_failure)}', False, (0, 0, 0)), (width * 0.02, height * 0.9))
         win.blit(font.render(f'maps into {map_string}', False, (0, 0, 0)), (width * 0.12, height * 0.905))
     
         # Display the interval components

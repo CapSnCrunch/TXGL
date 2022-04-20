@@ -16,7 +16,7 @@ def get_arc_params(interval):
 
 def rp1_interval(theta1, theta2):
     """get a pair of points in RP1 representing the pair of angles theta1, theta2
-    note: theta1, theta2 parameterize the double cover of RP^1"""
+    note: theta1, theta2 parameterize the double cover of RP1"""
     return np.array([
         [np.cos(theta1), np.cos(theta2)],
         [np.sin(theta1), np.sin(theta2)]

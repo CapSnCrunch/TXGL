@@ -1,20 +1,6 @@
-class Interval {
-    constructor(a, b, color){
-        this.a = a;
-        this.b = b;
-        this.color = color;
-    }
-
-    draw(intervalHeight){
-        stroke(this.color[0], this.color[1], this.color[2])
-        strokeWeight(7)
-        line(width/2 + 50, intervalHeight, width/2 + 50 + this.b - this.a, intervalHeight)
-    }
-}
-
 var intervals = [];
   
-let N = Object.keys(cyclicGraph).length; // Number of intervals to create
+let N = Object.keys(triangleGraph).length; // Number of intervals to create
 function setup(){
     var cnv = createCanvas(1000, 500);
     cnv.parent('canvas');  
@@ -99,7 +85,11 @@ function draw(){
         stroke(200)
         strokeWeight(1)
         line(width/2 + 50, intervalHeight, width, intervalHeight)
+        
         intervals[i].draw(intervalHeight);
+        // let image = intervals[i].getImage(triangleGraph[0][1]);
+        // image.draw(intervalHeight)
+
     }
 }
 

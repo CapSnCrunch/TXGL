@@ -26,6 +26,9 @@ def group(name = 'cyclic', *args):
         graph = {0: {1: B}, 
                  1: {0: A, 2: B}, 
                  2: {0: A}}
+        
+        print(A)
+        print(B)
 
         return graph
 
@@ -131,3 +134,5 @@ def group(name = 'cyclic', *args):
                 37: {2: d, 20: D, 16: c, 5: C, 7: B, 9: A}}
     
         return graph
+
+group('cyclic', 2, 3)

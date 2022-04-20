@@ -14,7 +14,7 @@ class Interval {
 
 var intervals = [];
   
-let N = Object.keys(triangleGraph).length; // Number of intervals to create
+let N = Object.keys(cyclicGraph).length; // Number of intervals to create
 function setup(){
     var cnv = createCanvas(1000, 500);
     cnv.parent('canvas');  
@@ -26,19 +26,19 @@ function setup(){
 
 let pressing = false
 let selected = -1
+let radius = 200; // Radius of circle graph sits on
+
 function draw(){
     clear();
 
     // Draw edges of graph as arcs between nodes
-    let radius = 200; // Radius of circle graph sits on
-    // for(let i = 0; i < Object.keys(triangleGraph).length; i++){
-    if (selected != -1){
-        for(let j = 0; j < Object.keys(triangleGraph[selected]).length; j++){
-            let theta1 = TWO_PI * selected / N;
+    for(let i = 0; i < Object.keys(triangleGraph).length; i++){
+        for(let j = 0; j < Object.keys(triangleGraph[i]).length; j++){
+            let theta1 = TWO_PI * i / N;
             let ellipse1X = 250 + radius * cos(theta1);
             let ellipse1Y = 250 + radius * sin(theta1);
 
-            let theta2 = TWO_PI * Object.keys(triangleGraph[selected])[j] / N;
+            let theta2 = TWO_PI * Object.keys(triangleGraph[i])[j] / N;
             let ellipse2X = 250 + radius * cos(theta2);
             let ellipse2Y = 250 + radius * sin(theta2);
 
@@ -54,6 +54,7 @@ function draw(){
 
             // Link for calculating the hyperbolic arc between two angles
             // https://mathworld.wolfram.com/PoincareHyperbolicDisk.html
+            
             let theta = (theta1 + theta2) / 2
             let dtheta = abs(theta1 - theta2) / 2
             let r = radius * tan(dtheta)
@@ -61,24 +62,21 @@ function draw(){
             let centerX = 250 + R * cos(theta)
             let centerY = 250 + R * sin(theta)
             let phi = asin(cos(dtheta))
-            let gamma = PI - PI/2 - (theta1 - theta2)
-
-            if (pressing){
-                console.log(
-                    'centerX', centerX, 
-                    'centerY', centerY,
-                    'phi', phi)
-            }
+            let gamma = PI - PI/2 + max(theta1, theta2)
             
             strokeWeight(1)
             stroke(200)
+            if (i == selected || pow(mouseX - ellipse1X, 2) + pow(mouseY - ellipse1Y, 2) < 100){
+                strokeWeight(3)
+                stroke(colors[i][0], colors[i][1], colors[i][2])
+                ellipse(centerX, centerY, 3,)
+            }
             noFill()
-            ellipse(centerX, centerY, 3, 3)
+            // ellipse(centerX, centerY, 3, 3)
             arc(centerX, centerY, 2*r, 2*r, gamma, gamma + 2*phi)
-            line(ellipse1X, ellipse1Y, ellipse2X, ellipse2Y)
+            // line(ellipse1X, ellipse1Y, ellipse2X, ellipse2Y)
         }
     }
-    // }
 
     // Draw nodes of automatic structure
     strokeWeight(1)
@@ -89,12 +87,11 @@ function draw(){
 
         stroke(colors[i][0], colors[i][1], colors[i][2])
         noFill()
-        if (pow(mouseX - ellipseX, 2) + pow(mouseY - ellipseY, 2) < 100){
+        if (i == selected || pow(mouseX - ellipseX, 2) + pow(mouseY - ellipseY, 2) < 100){
             fill(colors[i][0], colors[i][1], colors[i][2])
-            selected = i
         }
         ellipse(ellipseX, ellipseY, 20, 20);
-      }
+    }
 
     // Draw intervals
     for(let i = 0; i < N; i++){
@@ -107,7 +104,19 @@ function draw(){
 }
 
 function mousePressed(){
-    pressing = true
+    for(let i = 0; i < N; i++){
+        let theta = TWO_PI * i / N;
+        let ellipseX = 250 + radius * cos(theta);
+        let ellipseY = 250 + radius * sin(theta);
+
+        if (pow(mouseX - ellipseX, 2) + pow(mouseY - ellipseY, 2) < 100){
+            selected = i
+            break
+        } else {
+            selected = -1
+        }
+    }
+    
 }
 
 function mouseReleased(){

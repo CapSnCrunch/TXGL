@@ -19,7 +19,7 @@ font = pygame.font.SysFont('Roboto', 18)
 titleFont = pygame.font.SysFont('Roboto', 25)
 
 ### GET REPRESENTATION ###
-graph = group('triangle')
+graph = group('surface')
 
 print('Finding interval starting points...')
 words = allwords(graph, 3, 3)

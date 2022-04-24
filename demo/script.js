@@ -1,30 +1,33 @@
-var intervals = [];
-  
-let N = Object.keys(triangleGraph).length; // Number of intervals to create
 function setup(){
     var cnv = createCanvas(1000, 500);
     cnv.parent('canvas');  
-
-    for(let i = 0; i < N; i++){
-        append(intervals, new Interval(50, 100, colors[i]));
-    }
 }
 
 let pressing = false
 let selected = -1
 let radius = 200; // Radius of circle graph sits on
 
+
+// Get the current group along with its associated automatic structure and valid intervals
+//  Set the color of each disconnected interval
+let graph = triangleGraph
+let intervals = triangleIntervals
+for(let i = 0; i < Object.keys(graph).length; i++){
+    intervals[i].color = colors[i]
+}
+
+let N = Object.keys(graph).length; // Number of intervals to create
 function draw(){
     clear();
 
     // Draw edges of graph as arcs between nodes
-    for(let i = 0; i < Object.keys(triangleGraph).length; i++){
-        for(let j = 0; j < Object.keys(triangleGraph[i]).length; j++){
+    for(let i = 0; i < Object.keys(graph).length; i++){
+        for(let j = 0; j < Object.keys(graph[i]).length; j++){
             let theta1 = TWO_PI * i / N;
             let ellipse1X = 250 + radius * cos(theta1);
             let ellipse1Y = 250 + radius * sin(theta1);
 
-            let theta2 = TWO_PI * Object.keys(triangleGraph[i])[j] / N;
+            let theta2 = TWO_PI * Object.keys(graph[i])[j] / N;
             let ellipse2X = 250 + radius * cos(theta2);
             let ellipse2Y = 250 + radius * sin(theta2);
 
@@ -41,6 +44,10 @@ function draw(){
             // Link for calculating the hyperbolic arc between two angles
             // https://mathworld.wolfram.com/PoincareHyperbolicDisk.html
             
+            // let temp = theta1
+            // theta1 = theta2
+            // theta2 = temp
+
             let theta = (theta1 + theta2) / 2
             let dtheta = abs(theta1 - theta2) / 2
             let r = radius * tan(dtheta)
@@ -48,24 +55,33 @@ function draw(){
             let centerX = 250 + R * cos(theta)
             let centerY = 250 + R * sin(theta)
             let phi = asin(cos(dtheta))
-            let gamma = PI - PI/2 + max(theta1, theta2)
             
             strokeWeight(1)
             stroke(200)
             if (i == selected || pow(mouseX - ellipse1X, 2) + pow(mouseY - ellipse1Y, 2) < 100){
                 strokeWeight(3)
                 stroke(colors[i][0], colors[i][1], colors[i][2])
-                ellipse(centerX, centerY, 3,)
+                //ellipse(centerX, centerY, 3, 3) // Center of hyperbolic arc
             }
+
             noFill()
+            if (phi > 0){
+                let gamma = PI - PI/2 + max(theta1, theta2)
+                arc(centerX, centerY, 2*r, 2*r, gamma, gamma + 2*phi)
+            } else {
+                let gamma = PI - PI/2 + min(theta1, theta2)
+                arc(centerX, centerY, 2*r, 2*r, gamma, gamma - 2*phi)
+            }
+
             // ellipse(centerX, centerY, 3, 3)
-            arc(centerX, centerY, 2*r, 2*r, gamma, gamma + 2*phi)
+            // arc(centerX, centerY, 2*r, 2*r, gamma, gamma + 2*phi)
             // line(ellipse1X, ellipse1Y, ellipse2X, ellipse2Y)
         }
     }
 
     // Draw nodes of automatic structure
     strokeWeight(1)
+    selected = -1
     for(let i = 0; i < N; i++){
         let theta = TWO_PI * i / N;
         let ellipseX = 250 + radius * cos(theta);
@@ -75,21 +91,35 @@ function draw(){
         noFill()
         if (i == selected || pow(mouseX - ellipseX, 2) + pow(mouseY - ellipseY, 2) < 100){
             fill(colors[i][0], colors[i][1], colors[i][2])
+            selected = i
         }
         ellipse(ellipseX, ellipseY, 20, 20);
     }
 
-    // Draw intervals
+    // Draw intervals (line version)
+    // for(let i = 0; i < N; i++){
+    //     let intervalHeight = 50 + i * (height-100) / (N - 1);
+    //     stroke(200)
+    //     strokeWeight(1)
+    //     line(width/2 + 50, intervalHeight, width, intervalHeight)
+    //     intervals[i].drawLine(intervalHeight, selected == i)
+
+    //     // let image = intervals[i].getImage(triangleGraph[0][1])
+    //     // image.draw(intervalHeight)
+
+    // }
+    
+    // Draw intervals (arc version)
+    noFill()
+    stroke(200)
+    strokeWeight(1)
+    ellipse(width - 250, 250, 2 * radius, 2 * radius)
     for(let i = 0; i < N; i++){
-        let intervalHeight = 50 + i * (height-100) / (N - 1);
         stroke(200)
         strokeWeight(1)
-        line(width/2 + 50, intervalHeight, width, intervalHeight)
-        
-        intervals[i].draw(intervalHeight);
-        // let image = intervals[i].getImage(triangleGraph[0][1]);
-        // image.draw(intervalHeight)
-
+        if (selected == - 1 || selected == i){
+            intervals[i].drawArc([width - 250, 250], radius, selected == i)
+        }
     }
 }
 

@@ -39,13 +39,17 @@ class Interval {
 
     drawLine(intervalHeight, color, bold = false){
         // Draw the line version of the interval to the canvas at a specified height
+        stroke(200)
+        strokeWeight(1)
+        line(width/2 + 50, intervalHeight, width - 50, intervalHeight)
+
         stroke(color[0], color[1], color[2])
         strokeWeight(7 + 5 * bold)
-        let x1 = (width/2 - 50) * this.a / PI + width/2 + 50
-        let x2 = (width/2 - 50) * this.b / PI + width/2 + 50
+        let x1 = (width/2 - 100) * this.a / PI + width/2 + 50
+        let x2 = (width/2 - 100) * this.b / PI + width/2 + 50
         if (x1 > x2){
             line(width/2 + 50, intervalHeight, x2, intervalHeight)
-            line(x1, intervalHeight, width, intervalHeight)
+            line(x1, intervalHeight, width - 50, intervalHeight)
         } else {
             line(x1, intervalHeight, x2, intervalHeight)
         }

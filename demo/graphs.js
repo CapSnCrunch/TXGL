@@ -16,6 +16,10 @@ var cyclicIntervals = [
     new DisconnectedInterval([new Interval(1.48256, 1.63955)]),
 ]
 
+for(let i = 0; i < cyclicIntervals.length; i++){
+    cyclicIntervals[i].color = colors[i]
+}
+
 var tA = nj.array([[ 0.923879532511287, -0.217284326304659],
                    [-0.673986071141597, -0.923879532511287]]);
 var tB = nj.array([[0.,                1.219308768593441],
@@ -51,6 +55,10 @@ var triangleIntervals = [
     new DisconnectedInterval([new Interval(1.87557, 2.48984)]),
     new DisconnectedInterval([new Interval(0.03503, 0.88848)]),
 ]
+
+for(let i = 0; i < triangleIntervals.length; i++){
+    triangleIntervals[i].color = colors[i]
+}
 
 let sa = 0;
 let sb = 0;
@@ -141,3 +149,7 @@ var surfaceIntervals = [
     new DisconnectedInterval([new Interval(1.802, 0.987)]),
     new DisconnectedInterval([new Interval(0.231, 2.558)]),
 ]
+
+for(let i = 0; i < surfaceIntervals.length; i++){
+    surfaceIntervals[i].color = colors[i]
+}

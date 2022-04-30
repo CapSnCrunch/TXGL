@@ -26,6 +26,7 @@ function drawEdge(theta1, theta2, color = 200){
     let centerX = 250 + R * cos(theta)
     let centerY = 250 + R * sin(theta)
     let phi = asin(cos(dtheta))
+    let gamma;
     
     strokeWeight(1)
     stroke(200)
@@ -37,11 +38,16 @@ function drawEdge(theta1, theta2, color = 200){
 
     noFill()
     if (phi > 0){
-        let gamma = PI - PI/2 + max(theta1, theta2)
+        gamma = PI - PI/2 + max(theta1, theta2)
         arc(centerX, centerY, 2*r, 2*r, gamma, gamma + 2*phi)
     } else {
-        let gamma = PI - PI/2 + min(theta1, theta2)
+        gamma = PI - PI/2 + min(theta1, theta2)
         arc(centerX, centerY, 2*r, 2*r, gamma, gamma - 2*phi)
+    }
+        
+    // Draw an arrow in the center of the edge
+    if (color != 200){
+        ellipse(centerX - 2*r * cos(gamma + phi), centerY - 2*r * sin(gamma + phi), 5, 5)
     }
 }
 

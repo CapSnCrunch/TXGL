@@ -11,9 +11,9 @@ var cyclicGraph = {
 var cyclicIntervals = [
     new DisconnectedInterval([new Interval(0.15244, 0.65176), 
                               new Interval(2.84228, 2.94228)]),
-    new DisconnectedInterval([new Interval(1.48256, 1.63955), 
+    new DisconnectedInterval([new Interval(1.48256, 1.71955), 
                               new Interval(2.84228, 2.94228)]),
-    new DisconnectedInterval([new Interval(1.48256, 1.63955)]),
+    new DisconnectedInterval([new Interval(1.48256, 1.71955)]),
 ]
 
 for(let i = 0; i < cyclicIntervals.length; i++){
@@ -60,58 +60,64 @@ for(let i = 0; i < triangleIntervals.length; i++){
     triangleIntervals[i].color = colors[i]
 }
 
-let sa = 0;
-let sb = 0;
-let sc = 0;
-let sd = 0;
+let sa = nj.array([[4.61158179, 0],
+                   [0, 0.21684534]]);
+let sb = nj.array([[ 3.96798754, -1.55377397],
+                   [-1.55377397, 0.86043959]]);
+let sc = nj.array([[ 2.41421356, -2.19736823],
+                   [-2.19736823, 2.41421356]]);
+let sd = nj.array([[ 0.86043959, -1.55377397],
+                   [-1.55377397, 3.96798754]]);
 
-let sA = 0;
-let sB = 0;
-let sC = 0;
-let sD = 0;
+let sA = nj.array([[0.21684534, 0],
+                   [0, 4.61158179]]);
+let sB = nj.array([[0.86043959, 1.55377397],
+                   [1.55377397, 3.96798754]]);
+let sC = nj.array([[2.41421356, 2.19736823],
+                   [2.19736823, 2.41421356]]);
+let sD = nj.array([[3.96798754, 1.55377397],
+                   [1.55377397, 0.86043959]]);
 
 var surfaceGraph = {
-    0: {1: sd, 2: sD, 3: sc, 4: sC, 5: sb, 6: sB, 7: sa, 8: sA},
-    1: {1: sd, 3: sc, 4: sC, 5: sb, 6: sB, 7: sa, 8: sA},
-    2: {2: sD, 3: sc, 4: sC, 5: sb, 6: sB, 7: sa, 8: sA},
-    3: {1: sd, 9: sD, 3: sc, 5: sb, 10: sB, 7: sa, 8: sA},
-    4: {11: sd, 2: sD, 4: sC, 12: sb, 6: sB, 7: sa, 8: sA},
-    5: {1: sd, 2: sD, 3: sc, 13: sC, 5: sb, 7: sa, 14: sA},
-    6: {1: sd, 2: sD, 15: sc, 4: sC, 6: sB, 16: sa, 8: sA},
-    7: {17: sd, 2: sD, 3: sc, 4: sC, 5: sb, 18: sB, 7: sa},
-    8: {1: sd, 19: sD, 3: sc, 4: sC, 20: sb, 6: sB, 8: sA},
-    9: {2: sD, 3: sc, 4: sC, 5: sb, 6: sB, 7: sa, 21: sA},
-    10: {1: sd, 2: sD, 15: sc, 4: sC, 6: sB, 22: sa, 8: sA},
-    11: {1: sd, 3: sc, 4: sC, 5: sb, 6: sB, 23: sa, 8: sA},
-    12: {1: sd, 2: sD, 3: sc, 13: sC, 5: sb, 7: sa, 24: sA},
-    13: {25: sd, 2: sD, 4: sC, 12: sb, 6: sB, 7: sa, 8: sA},
-    14: {1: sd, 26: sD, 3: sc, 4: sC, 20: sb, 6: sB, 8: sA},
-    15: {1: sd, 27: sD, 3: sc, 5: sb, 10: sB, 7: sa, 8: sA},
-    16: {28: sd, 2: sD, 3: sc, 4: sC, 5: sb, 18: sB, 7: sa},
-    17: {1: sd, 3: sc, 29: sC, 5: sb, 6: sB, 7: sa, 8: sA},
-    18: {1: sd, 2: sD, 30: sc, 4: sC, 6: sB, 16: sa, 8: sA},
-    19: {2: sD, 31: sc, 4: sC, 5: sb, 6: sB, 7: sa, 8: sA},
-    20: {1: sd, 2: sD, 3: sc, 32: sC, 5: sb, 7: sa, 14: sA},
-    21: {1: sd, 19: sD, 3: sc, 4: sC, 34: sb, 6: sB, 8: sA},
-    22: {2: sD, 3: sc, 4: sC, 5: sb, 18: sB, 7: sa},
-    23: {17: sd, 2: sD, 3: sc, 4: sC, 5: sb, 34: sB, 7: sa},
-    24: {1: sd, 3: sc, 4: sC, 20: sb, 6: sB, 8: sA},
-    25: {1: sd, 3: sc, 4: sC, 5: sb, 6: sB, 35: sa, 8: sA},
-    26: {2: sD, 4: sC, 5: sb, 6: sB, 7: sa, 8: sA},
-    27: {2: sD, 3: sc, 4: sC, 5: sb, 6: sB, 7: sa, 36: sA},
-    28: {1: sd, 3: sc, 5: sb, 6: sB, 7: sa, 8: sA},
-    29: {11: sd, 2: sD, 4: sC, 6: sB, 7: sa, 8: sA},
-    30: {1: sd, 3: sc, 5: sb, 10: sB, 7: sa, 8: sA},
-    31: {1: sd, 9: sD, 3: sc, 5: sb, 7: sa, 8: sA},
-    32: {2: sD, 4: sC, 12: sb, 6: sB, 7: sa, 8: sA},
-    33: {1: sd, 9: sD, 3: sc, 5: sb, 7: sa, 14: sA},
-    34: {11: sd, 2: sD, 4: sC, 6: sB, 16: sa, 8: sA},
-    35: {17: sd, 2: sD, 3: sc, 13: sC, 5: sb, 7: sa},
-    36: {1: sd, 19: sD, 15: sc, 4: sC, 6: sB, 8: sA}
+    0: {0: sd, 2: sc, 3: sC, 4: sb, 5: sB, 6: sa, 7: sA},
+    1: {1: sD, 2: sc, 3: sC, 4: sb, 5: sB, 6: sa, 7: sA},
+    2: {0: sd, 8: sD, 2: sc, 4: sb, 9: sB, 6: sa, 7: sA},
+    3: {10: sd, 1: sD, 3: sC, 11: sb, 5: sB, 6: sa, 7: sA},
+    4: {0: sd, 1: sD, 2: sc, 12: sC, 4: sb, 6: sa, 13: sA},
+    5: {0: sd, 1: sD, 14: sc, 3: sC, 5: sB, 15: sa, 7: sA},
+    6: {16: sd, 1: sD, 2: sc, 3: sC, 4: sb, 17: sB, 6: sa},
+    7: {0: sd, 18: sD, 2: sc, 3: sC, 19: sb, 5: sB, 7: sA},
+    8: {1: sD, 2: sc, 3: sC, 4: sb, 5: sB, 6: sa, 20: sA},
+    9: {0: sd, 1: sD, 14: sc, 3: sC, 5: sB, 21: sa, 7: sA},
+    10: {0: sd, 2: sc, 3: sC, 4: sb, 5: sB, 22: sa, 7: sA},
+    11: {0: sd, 1: sD, 2: sc, 12: sC, 4: sb, 6: sa, 23: sA},
+    12: {24: sd, 1: sD, 3: sC, 11: sb, 5: sB, 6: sa, 7: sA},
+    13: {0: sd, 25: sD, 2: sc, 3: sC, 19: sb, 5: sB, 7: sA},
+    14: {0: sd, 26: sD, 2: sc, 4: sb, 9: sB, 6: sa, 7: sA},
+    15: {27: sd, 1: sD, 2: sc, 3: sC, 4: sb, 17: sB, 6: sa},
+    16: {0: sd, 2: sc, 28: sC, 4: sb, 5: sB, 6: sa, 7: sA},
+    17: {0: sd, 1: sD, 29: sc, 3: sC, 5: sB, 15: sa, 7: sA},
+    18: {1: sD, 30: sc, 3: sC, 4: sb, 5: sB, 6: sa, 7: sA},
+    19: {2: sd, 1: sD, 2: sc, 31: sC, 4: sb, 6: sa, 13: sA},
+    20: {0: sd, 18: sD, 2: sc, 3: sC, 32: sb, 5: sB, 7: sA},
+    21: {1: sD, 2: sc, 3: sC, 4: sb, 17: sB, 6: sa},
+    22: {16: sd, 1: sD, 2: sc, 3: sC, 4: sb, 33: sB, 6: sa},
+    23: {0: sd, 2: sc, 3: sC, 19: sb, 5: sB, 7: sA},
+    24: {0: sd, 2: sc, 3: sC, 4: sb, 5: sB, 34: sa, 7: sA},
+    25: {1: sD, 3: sC, 4: sb, 5: sB, 6: sa, 7: sA},
+    26: {1: sD, 2: sc, 3: sC, 4: sb, 5: sB, 6: sa, 35: sA},
+    27: {0: sd, 2: sc, 4: sb, 5: sB, 6: sa, 7: sA},
+    28: {10: sd, 1: sD, 3: sC, 5: sB, 6: sa, 7: sA},
+    29: {0: sd, 2: sc, 4: sb, 9: sB, 6: sa, 7: sA},
+    30: {0: sd, 8: sD, 2: sc, 4: sb, 6: sa, 7: sA},
+    31: {1: sD, 3: sC, 11: sb, 5: sB, 6: sa, 7: sA},
+    32: {0: sd, 8: sD, 2: sc, 4: sb, 6: sa, 13: sA},
+    33: {10: sd, 1: sD, 3: sC, 5: sB, 15: sa, 7: sA},
+    34: {16: sd, 1: sD, 2: sc, 12: sC, 4: sb, 6: sa},
+    35: {0: sd, 18: sD, 14: sc, 3: sC, 5: sB, 7: sA}
 }
 
 var surfaceIntervals = [
-    new DisconnectedInterval([new Interval(0, 0)]),
     new DisconnectedInterval([new Interval(0.583, 0.202)]),
     new DisconnectedInterval([new Interval(2.154, 1.773)]),
     new DisconnectedInterval([new Interval(1.017, 0.595)]),
@@ -124,7 +130,7 @@ var surfaceIntervals = [
     new DisconnectedInterval([new Interval(3.045, 2.558)]),
     new DisconnectedInterval([new Interval(0.583, 0.161)]),
     new DisconnectedInterval([new Interval(1.474, 0.987)]),
-    new DisconnectedInterval([new Interval(2.858, 2.125)]),
+    new DisconnectedInterval([new Interval(2.600, 2.125)]),
     new DisconnectedInterval([new Interval(0.296, 2.910)]),
     new DisconnectedInterval([new Interval(1.017, 0.554)]),
     new DisconnectedInterval([new Interval(1.867, 1.339)]),

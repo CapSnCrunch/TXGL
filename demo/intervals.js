@@ -1,4 +1,4 @@
-function det(matrix){
+function determinant(matrix){
     // Return the determinant of a matrix
     //  Note: currently this only accepts 2x2 NumJs matrices
     return matrix.get(0,0) * matrix.get(1,1) - matrix.get(0,1) * matrix.get(1,0)
@@ -37,44 +37,75 @@ class Interval {
         this.b = b;
     }
 
-    drawLine(intervalHeight, color, bold = false){
+    drawLine(intervalHeight, color, bold = false, image = false){
         // Draw the line version of the interval to the canvas at a specified height
-        stroke(color[0], color[1], color[2])
-        strokeWeight(7 + 5 * bold)
         let x1 = (width/2 - 100) * this.a / PI + width/2 + 50
         let x2 = (width/2 - 100) * this.b / PI + width/2 + 50
-        if (x1 > x2){
-            line(width/2 + 50, intervalHeight, x2, intervalHeight)
-            line(x1, intervalHeight, width - 50, intervalHeight)
+        if (image == true){
+            stroke(255)
+            strokeWeight(6)
+            if (x1 > x2){
+                line(width/2 + 50, intervalHeight, x2, intervalHeight)
+                line(x1, intervalHeight, width - 50, intervalHeight)
+            } else {
+                line(x1, intervalHeight, x2, intervalHeight)
+            }
+            // stroke(color[0], color[1], color[2])
+            // strokeWeight(4)
+            // if (x1 > x2){
+            //     line(width/2 + 50, intervalHeight, x2, intervalHeight)
+            //     line(x1, intervalHeight, width - 50, intervalHeight)
+            // } else {
+            //     line(x1, intervalHeight, x2, intervalHeight)
+            // } 
         } else {
-            line(x1, intervalHeight, x2, intervalHeight)
+            stroke(color[0], color[1], color[2])
+            strokeWeight(7 + 4 * bold)
+            if (x1 > x2){
+                line(width/2 + 50, intervalHeight, x2, intervalHeight)
+                line(x1, intervalHeight, width - 50, intervalHeight)
+            } else {
+                line(x1, intervalHeight, x2, intervalHeight)
+            }
         }
     }
 
-    drawArc(center, radius, color, bold = false){
+    drawArc(center, radius, color, bold = false, image = false){
         // Draw the arc version of the interval to the canvas with a specified center and radius
-        stroke(color[0], color[1], color[2])
-        strokeWeight(7 + 5 * bold)
-        arc(center[0], center[1], 2 * radius, 2 * radius, this.a * 2, this.b * 2)
+        if (image == true){
+            stroke(255)
+            strokeWeight(7)
+            arc(center[0], center[1], 2 * radius, 2 * radius, this.a * 2, this.b * 2)
+        } else {
+            stroke(color[0], color[1], color[2])
+            strokeWeight(7 + 5 * bold)
+            arc(center[0], center[1], 2 * radius, 2 * radius, this.a * 2, this.b * 2)
+        }
     }
 
     getImage(matrix){
         // Get the image of the interval under an action in SL(2,R)
         //  Return the image as an Interval object
-        let temp = matrix * rp1Interval(this.a % PI, this.b % PI)
-        let x = temp[0];
-        let y = temp[1];
+        let temp = matrix.dot(rp1Interval(this.a % PI, this.b % PI))
 
-        console.log('det is', det(matrix))
-        if (det(matrix) < 0){
-            console.log(nj.arctan(y, x))
-            let temp2 = nj.arctan(y, x)
-            let b = temp2.get(0) % PI;
-            let a = temp2.get(1) % PI;
+        let x1 = temp.get(0,0);
+        let y1 = temp.get(1,0);
+        let x2 = temp.get(0,1);
+        let y2 = temp.get(1,1);
+
+        let a, b;
+
+        if (determinant(matrix) < 0){
+            b = Math.atan2(y1, x1) % PI;
+            a = Math.atan2(y2, x2) % PI;
         } else {
-            let a = temp2.get(0) % PI;
-            let b = temp2.get(1) % PI;
+            a = Math.atan2(y1, x1) % PI;
+            b = Math.atan2(y2, x2) % PI;
         }
+
+        // JavaScript mod function ignores negative
+        if (a < 0){a += PI}
+        if (b < 0){b += PI}
 
         return new Interval(a, b, this.color)
     }
@@ -100,6 +131,28 @@ class DisconnectedInterval {
         // Draw the line version of the disconnected interval to the canvas at a specified height
         for(let i = 0; i < this.components.length; i++){
             this.components[i].drawArc(center, radius, this.color, bold)
+        }
+    }
+
+    drawLineImage(matrix, intervalHeight, bold = false){
+        // Draw the image of the disconnected interval under a matrix
+        let images = []
+        for(let i = 0; i < this.components.length; i++){
+            images.push(this.components[i].getImage(matrix))
+        }
+        for(let i = 0; i < images.length; i++){
+            images[i].drawLine(intervalHeight, this.color, bold = false, image = true)
+        }
+    }
+
+    drawArcImage(matrix, center, radius, bold = false){
+        // Draw the image of the disconnected interval under a matrix
+        let images = []
+        for(let i = 0; i < this.components.length; i++){
+            images.push(this.components[i].getImage(matrix))
+        }
+        for(let i = 0; i < images.length; i++){
+            images[i].drawArc(center, radius, this.color, bold = false, image = true)
         }
     }
 }

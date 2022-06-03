@@ -22,19 +22,21 @@ titleFont = pygame.font.SysFont('Roboto', 25)
 graph = group('surface')
 
 print('Finding interval starting points...')
-words = allwords(graph, 3, 3)
+#words = allwords(graph, 5, 5)
+words = oneword(graph, 100)
 print('Initializing intervals...')
 
 # CREATE INITIAL INTERVALS OF SIZE eps
-eps = 5e-2
+eps = 5e-5
 disconnected_intervals = []
+print('words', words)
 for i in range(len(words)):
     intervals = []
     color = colors[i]
     for j in range(len(words[i])):
         s = np.arctan2(np.linalg.svd(words[i][j])[0][1][0], np.linalg.svd(words[i][j])[0][0][0])
         intervals.append(Interval(s - eps, s + eps, color))
-    initial_intervals = DisconnectedInterval(intervals)
+    initial_intervals = DisconnectedInterval(intervals, color)
     initial_intervals.combine()
     disconnected_intervals.append(initial_intervals)
 
@@ -85,7 +87,7 @@ def iterate():
         n: Index of interval in disconnected_intervals to expand
         delta: Padding on patches over images
     '''
-    delta = 5e-3 # Extra space just over the image (3e-4)
+    delta = 1e-2 # Extra space just over the image (3e-4)
 
     failed = {}
     # Look at a particular L1 disconnected interval

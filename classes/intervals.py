@@ -128,12 +128,9 @@ class Interval():
         return '(' + str(self.a) + ', ' + str(self.b) + ')'
 
 class DisconnectedInterval():
-    def __init__(self, components = []):
+    def __init__(self, components = [], color = np.array([0,0,1])):
         self.components = components
-        if len(components) > 0:
-            self.color = components[0].color
-        else:
-            self.color = np.array([0, 0, 1])
+        self.color = color
         #self.sort()
 
     def draw(self, ax):
@@ -250,7 +247,12 @@ class DisconnectedInterval():
         else:
             out.append(Interval(start, end, self.color))
         
-        self.components = out
+        new_out = []
+        for i in range(len(out)):
+            if out[i].a != out[i].b:
+                new_out.append(out[i])
+
+        self.components = new_out
 
         if debug:
             print()

@@ -7,6 +7,60 @@ from classes.graph_funcs import *
 # A, B in <a, b, c | a^2 = b^2 = c^2 = 1, (ab)^3 = (cb)^3 = (ac)^4 = 1>
 mat = np.array([[ 0.923879532511287, -0.217284326304659],
                [-0.673986071141597, -0.923879532511287]])
+
+# OLD SURFACE GROUP REPRESENTATION
+# l = 2 * (2 ** (1/4)) * np.cos(np.pi/8) + (2 ** (1/2)) + 1
+# X = np.array([[l, 0], [0, 1/l]])
+
+# R = lambda theta: np.array([[np.cos(theta), -np.sin(theta)], [np.sin(theta), np.cos(theta)]])
+
+# a = X
+# b = R(-np.pi/8) @ X @ R(np.pi/8)
+# c = R(-np.pi/4) @ X @ R(np.pi/4)
+# d = R(-3*np.pi/8) @ X @ R(3*np.pi/8)
+
+# A = np.linalg.inv(a)
+# B = np.linalg.inv(b)
+# C = np.linalg.inv(c)
+# D = np.linalg.inv(d)
+
+# NEW SURFACE GROUP REPRESENTATION
+s = 12
+a = np.array([
+    [  s,   0],
+    [  0, 1/s]
+])
+b = np.array([
+    [1/2*s + 1/2/s, 1/2*s - 1/2/s],
+    [1/2*s - 1/2/s, 1/2*s + 1/2/s]
+])
+c = np.array([
+    [ -1/2*(s**6 - s**4 + 11*s**2 - 3)/(s**5 - 6*s**3 + s),  1/2*(3*s**6 - s**4 - 3*s**2 + 1)/(s**5 - 6*s**3 + s)],
+    [  -1/2*(s**6 - 3*s**4 - s**2 + 3)/(s**5 - 6*s**3 + s), 1/2*(3*s**6 - 11*s**4 + s**2 - 1)/(s**5 - 6*s**3 + s)]
+])
+d = np.array([
+    [ (s**5 - 2*s**3 - 3*s)/(s**4 - 6*s**2 + 1), -2*(s**5 - 2*s**3 + s)/(s**4 - 6*s**2 + 1)],
+    [ 2*(s**4 - 2*s**2 + 1)/(s**5 - 6*s**3 + s), -(3*s**4 + 2*s**2 - 1)/(s**5 - 6*s**3 + s)]
+])
+A = np.array([
+    [1/s,   0],
+    [  0,   s]
+])
+B = np.array([
+    [ 1/2*s + 1/2/s, -1/2*s + 1/2/s],
+    [-1/2*s + 1/2/s,  1/2*s + 1/2/s]
+])
+C = np.array([
+    [1/2*(3*s**6 - 11*s**4 + s**2 - 1)/(s**5 - 6*s**3 + s), -1/2*(3*s**6 - s**4 - 3*s**2 + 1)/(s**5 - 6*s**3 + s)],
+    [   1/2*(s**6 - 3*s**4 - s**2 + 3)/(s**5 - 6*s**3 + s),  -1/2*(s**6 - s**4 + 11*s**2 - 3)/(s**5 - 6*s**3 + s)]
+])
+D = np.array([
+    [-(3*s**4 + 2*s**2 - 1)/(s**5 - 6*s**3 + s),  2*(s**5 - 2*s**3 + s)/(s**4 - 6*s**2 + 1)],
+    [-2*(s**4 - 2*s**2 + 1)/(s**5 - 6*s**3 + s),  (s**5 - 2*s**3 - 3*s)/(s**4 - 6*s**2 + 1)]
+])
+
+mat = d
+
 #mat = np.array([[0.70710678, -1.59099026],
 #                [0.31426968, 0.70710678]])
 
@@ -23,7 +77,7 @@ delta = np.pi / n
 intervals = []
 for i in range(n):
     color = np.array([i for i in colorsys.hsv_to_rgb(i/n,1,1)])
-    intervals.append(Interval(i * delta - delta / 10, (i+1) * delta + delta / 10, 0, 0, [], color))
+    intervals.append(Interval(i * delta - delta / 10, (i+1) * delta + delta / 10, color))
 
 fig, (ax1, ax2) = plt.subplots(1, 2, figsize = (10, 5))
 

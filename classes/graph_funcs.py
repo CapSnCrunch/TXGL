@@ -17,7 +17,7 @@ import numpy as np
         return [[word[1] for word in words if word[0][0] == letter] for letter in list(graph.keys())]"""
 
 def allwords(graph, current_length, max_length):
-    '''Return a list of matrices representing words of length max_length sorted by starting letter'''
+    '''Return a list of matrices representing words of length max_length sorted by the starting letter'''
     if current_length == 1:
         states = [[s] for s in list(graph.keys())]
         return zip(states, [np.identity(2) for i in range(len(states))])
@@ -30,6 +30,26 @@ def allwords(graph, current_length, max_length):
     else:
         #print([[word[0] for word in words if word[0][0] == letter] for letter in list(graph.keys())])
         return [[word[1] for word in words if word[0][0] == letter] for letter in list(graph.keys())]
+
+def oneword(graph, length):
+    '''Return a list of matrices representing some of the words of the given length sorted by the starting letter'''
+    current_node = np.random.choice(list(graph.keys()), 1)[0]
+    word = np.eye(2)
+    for i in range(length):
+        # print('current', current_node)
+        # print('choices', list(graph[current_node].keys()))
+        next_node = np.random.choice(list(graph[current_node].keys()), 1)[0]
+        if i == 0:
+            starting_node = next_node
+        word = graph[current_node][next_node] @ word
+        current_node = next_node
+    words = []
+    for i in range(len(list(graph.keys()))):
+        if i == starting_node:
+            words.append([word])
+        else:
+            words.append([])
+    return words
 
 def generate_graph(orders, mats):
     n, m = orders

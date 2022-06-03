@@ -26,9 +26,6 @@ def group(name = 'cyclic', *args):
         graph = {0: {1: B}, 
                  1: {0: A, 2: B}, 
                  2: {0: A}}
-        
-        print(A)
-        print(B)
 
         return graph
 
@@ -167,8 +164,8 @@ def group(name = 'cyclic', *args):
             [-(3*s**4 + 2*s**2 - 1)/(s**5 - 6*s**3 + s),  2*(s**5 - 2*s**3 + s)/(s**4 - 6*s**2 + 1)],
             [-2*(s**4 - 2*s**2 + 1)/(s**5 - 6*s**3 + s),  (s**5 - 2*s**3 - 3*s)/(s**4 - 6*s**2 + 1)]
         ])
-        print('IDENTITY')
-        print(a @ b @ A @ B @ c @ d @ C @ D)
+        # print('IDENTITY')
+        # print(a @ b @ A @ B @ c @ d @ C @ D)
 
         graph = {
             0: {},
@@ -210,5 +207,3 @@ def group(name = 'cyclic', *args):
             36: {2: d, 5: C, 6: b, 7: B, 8: a, 9: A}}
     
         return graph
-
-group('cyclic', 2, 3)

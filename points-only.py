@@ -1,16 +1,13 @@
 from multiprocessing.dummy import Array
 import pygame
 import numpy as np
-from sympy import Point
 from groups import group
+from colors import colors
 from classes.group_funcs import *
 from classes.graph_funcs import *
 
 class Application():
-    def __init__(self, width = 600, height = 400):
-        # self.win = pygame.display.set_mode((width, height))
-        # pygame.display.set_caption('TXGL Point Permeation')
-
+    def __init__(self, width = 600, height = 600):
         self.graph = group('triangle')
         self.point_collections = []
     
@@ -46,6 +43,10 @@ class Application():
                     matrices_to_permeate_by.append(edges[i])
             pc.permeate_to_collections(collections_to_permeate_to, matrices_to_permeate_by)
 
+    def get_angles(self):
+        for pc in self.point_collections:
+            pc.get_angles()
+
     def print_collections(self):
         for i, pc in enumerate(self.point_collections):
             print('Collection', i)
@@ -68,21 +69,8 @@ class PointCollection():
         # Vectors in RP1 which have already been permeated
         self.old_points = np.array([])
 
-        # # Values between 0 and pi
-        # self.angles = []
-
-    # def add_point_from_angle(self, angle):
-    #     self.angles.append(angle)
-
-    #     point = np.array([
-    #         [np.cos(angle)],
-    #         [np.sin(angle)]
-    #     ])
-
-    #     if self.new_points.size == 0:
-    #         self.new_points = point
-    #     else:
-    #         self.new_points = np.append(self.new_points, point, axis = 0)
+        # Values between 0 and pi
+        self.angles = []
 
     def add_points(self, points):
         if self.new_points.size == 0:
@@ -105,6 +93,9 @@ class PointCollection():
             collection.add_points(point_images)
         self.stash_points()
 
+    def get_angles(self):
+        self.angles = np.arctan2(self.old_points[0], self.old_points[1])
+
 app = Application()
 app.setup()
 
@@ -112,3 +103,24 @@ app.print_point_counts()
 for i in range(15):
     app.permeate()
     app.print_point_counts()
+
+app.get_angles()
+
+width, height = 600, 600
+win = pygame.display.set_mode((width, height))
+pygame.display.set_caption('TXGL Point Permeation')
+
+while True:
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT:
+            pygame.quit()
+
+    win.fill((255, 255, 255))
+    
+    for i, pc in enumerate(app.point_collections):
+        radius = (width * 0.9) * i / len(app.point_collections) + width * 0.1
+        pygame.draw.ellipse(win, (230, 230, 230), (width/2 - radius / 2, height/2 - radius / 2, radius, radius), 1)
+        for angle in pc.angles:
+            pygame.draw.arc(win, colors[i] * 255, (width/2 - radius / 2, height/2 - radius / 2, radius, radius), angle * 2 - 0.04, angle * 2 + 0.04, 3)
+
+    pygame.display.update()

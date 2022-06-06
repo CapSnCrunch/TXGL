@@ -1,14 +1,17 @@
-from multiprocessing.dummy import Array
+from random import random
 import pygame
 import numpy as np
 from groups import group
 from colors import colors
-from classes.group_funcs import *
 from classes.graph_funcs import *
+from sklearn.cluster import KMeans
 
 class Application():
-    def __init__(self, width = 600, height = 600):
+    def __init__(self):
+        # self.graph = group('cyclic', 2, 3)
+        # self.graph = group('surface')
         self.graph = group('triangle')
+
         self.point_collections = []
     
     def setup(self):
@@ -32,16 +35,19 @@ class Application():
         
         print('Setup complete')
     
-    def permeate(self):
-        for i, pc in enumerate(self.point_collections):
-            collections_to_permeate_to = []
-            matrices_to_permeate_by = []
-            for j, edges in enumerate(self.graph.values()):
-                if i in edges.keys():
-                    # print(f'{i} in {j}')
-                    collections_to_permeate_to.append(self.point_collections[j])
-                    matrices_to_permeate_by.append(edges[i])
-            pc.permeate_to_collections(collections_to_permeate_to, matrices_to_permeate_by)
+    def permeate(self, steps = 1, print_counts = False):
+        ''' Get the images of all points under all actions they should be mapped by steps-many times'''
+        for step in range(steps):
+            for i, pc in enumerate(self.point_collections):
+                collections_to_permeate_to = []
+                matrices_to_permeate_by = []
+                for j, edges in enumerate(self.graph.values()):
+                    if i in edges.keys():
+                        # print(f'{i} in {j}')
+                        collections_to_permeate_to.append(self.point_collections[j])
+                        matrices_to_permeate_by.append(edges[i])
+                pc.permeate_to_collections(collections_to_permeate_to, matrices_to_permeate_by)
+            app.print_point_counts()
 
     def get_angles(self):
         for pc in self.point_collections:
@@ -61,6 +67,13 @@ class Application():
             total_old_points += int(pc.old_points.size / 2)
         print(f'New Points: {total_new_points}   Old Points: {total_old_points}')
 
+    def draw(self, win):
+        for i, pc in enumerate(self.point_collections):
+            radius = (width * 0.9) * i / len(self.point_collections) + width * 0.1
+            pygame.draw.ellipse(win, (230, 230, 230), (width/2 - radius / 2, height/2 - radius / 2, radius, radius), 1)
+            for angle in pc.angles:
+                pygame.draw.arc(win, colors[i] * 255, (width/2 - radius / 2, height/2 - radius / 2, radius, radius), angle * 2 - 0.04, angle * 2 + 0.04, 3)
+
 class PointCollection():
     def __init__(self):
         # Vectors in RP1 which have yet to be permeated
@@ -71,6 +84,8 @@ class PointCollection():
 
         # Values between 0 and pi
         self.angles = []
+
+        self.clusters = []
 
     def add_points(self, points):
         if self.new_points.size == 0:
@@ -94,17 +109,19 @@ class PointCollection():
         self.stash_points()
 
     def get_angles(self):
+        if self.old_points.size == 0:
+            return Exception('No points to get angles for, try using app.permeate()')
         self.angles = np.arctan2(self.old_points[0], self.old_points[1])
+
+    def get_clusters(self):
+        kmeans = KMeans(n_clusters = 1, random_state = 0).fit(np.array([self.angles]))
+        print('Labels', kmeans.labels_)
 
 app = Application()
 app.setup()
 
-app.print_point_counts()
-for i in range(15):
-    app.permeate()
-    app.print_point_counts()
-
-app.get_angles()
+# app.permeate()
+# app.point_collections[1].get_clusters()
 
 width, height = 600, 600
 win = pygame.display.set_mode((width, height))
@@ -114,13 +131,11 @@ while True:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             pygame.quit()
+        if event.type == pygame.KEYDOWN:
+            if event.key == pygame.K_SPACE:
+                app.permeate(steps = 2, print_counts = True)
+                app.get_angles()
 
     win.fill((255, 255, 255))
-    
-    for i, pc in enumerate(app.point_collections):
-        radius = (width * 0.9) * i / len(app.point_collections) + width * 0.1
-        pygame.draw.ellipse(win, (230, 230, 230), (width/2 - radius / 2, height/2 - radius / 2, radius, radius), 1)
-        for angle in pc.angles:
-            pygame.draw.arc(win, colors[i] * 255, (width/2 - radius / 2, height/2 - radius / 2, radius, radius), angle * 2 - 0.04, angle * 2 + 0.04, 3)
-
+    app.draw(win)
     pygame.display.update()

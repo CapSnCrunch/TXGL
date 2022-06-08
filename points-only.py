@@ -1,4 +1,3 @@
-from random import random
 import pygame
 import numpy as np
 from groups import group
@@ -9,8 +8,8 @@ from sklearn.cluster import KMeans
 class Application():
     def __init__(self):
         # self.graph = group('cyclic', 2, 3)
-        # self.graph = group('surface')
         self.graph = group('triangle')
+        # self.graph = group('surface')
 
         self.point_collections = []
     
@@ -47,17 +46,25 @@ class Application():
                         collections_to_permeate_to.append(self.point_collections[j])
                         matrices_to_permeate_by.append(edges[i])
                 pc.permeate_to_collections(collections_to_permeate_to, matrices_to_permeate_by)
-            app.print_point_counts()
+
+            app.get_angles()
+
+            if print_counts:
+                app.print_collections()
+                app.print_point_counts()
 
     def get_angles(self):
         for pc in self.point_collections:
             pc.get_angles()
 
     def print_collections(self):
+        print()
         for i, pc in enumerate(self.point_collections):
             print('Collection', i)
-            print(' New Points', pc.new_points)
-            print(' Old Points', pc.old_points)
+            print(' New Points', int(pc.new_points.size / 2))
+            print(' Old Points', int(pc.old_points.size / 2))
+            print(' Angles', len(pc.angles))
+        print()
 
     def print_point_counts(self):
         total_new_points = 0
@@ -85,14 +92,22 @@ class PointCollection():
         # Values between 0 and pi
         self.angles = []
 
-        self.clusters = []
-
     def add_points(self, points):
         if self.new_points.size == 0:
             self.new_points = points
         else:
             self.new_points = np.append(self.new_points, points, axis = 1)
 
+    # def truncate_new_points(self, limit = 1000):
+    #     print('new points before', self.new_points.size)
+    #     if self.new_points.size / 2 > limit:
+    #         self.new_points = self.new_points[:,:limit]
+    #         print('new points after', self.new_points.size)
+
+    # def truncate_old_points(self, limit = 1000):
+    #     if self.old_points.size / 2 > limit:
+    #         self.old_points = self.old_points[:,:limit]
+    
     def stash_points(self):
         if self.old_points.size == 0:
             self.old_points = self.new_points
@@ -104,7 +119,7 @@ class PointCollection():
         if self.new_points.size == 0:
             return 'No points to permeate'
         for collection, mat in zip(collections, matrices):
-            point_images = mat @ self.new_points
+            point_images = mat @ self.new_points[:,:50]
             collection.add_points(point_images)
         self.stash_points()
 
@@ -120,8 +135,9 @@ class PointCollection():
 app = Application()
 app.setup()
 
-# app.permeate()
-# app.point_collections[1].get_clusters()
+app.get_angles()
+app.print_collections()
+app.print_point_counts()
 
 width, height = 600, 600
 win = pygame.display.set_mode((width, height))
@@ -133,8 +149,7 @@ while True:
             pygame.quit()
         if event.type == pygame.KEYDOWN:
             if event.key == pygame.K_SPACE:
-                app.permeate(steps = 2, print_counts = True)
-                app.get_angles()
+                app.permeate(steps = 1, print_counts = True)
 
     win.fill((255, 255, 255))
     app.draw(win)

@@ -3,13 +3,12 @@ import numpy as np
 from groups import group
 from colors import colors
 from classes.graph_funcs import *
-from sklearn.cluster import KMeans
 
 class Application():
     def __init__(self):
         # self.graph = group('cyclic', 2, 3)
-        self.graph = group('triangle')
-        # self.graph = group('surface')
+        # self.graph = group('triangle')
+        self.graph = group('surface')
 
         self.point_collections = []
     
@@ -34,7 +33,7 @@ class Application():
         
         print('Setup complete')
     
-    def permeate(self, steps = 1, print_counts = False):
+    def permeate(self, steps = 1, print_counts = False, safe_terminate = True):
         ''' Get the images of all points under all actions they should be mapped by steps-many times'''
         for step in range(steps):
             for i, pc in enumerate(self.point_collections):
@@ -46,16 +45,29 @@ class Application():
                         collections_to_permeate_to.append(self.point_collections[j])
                         matrices_to_permeate_by.append(edges[i])
                 pc.permeate_to_collections(collections_to_permeate_to, matrices_to_permeate_by)
-
             app.get_angles()
 
             if print_counts:
                 app.print_collections()
                 app.print_point_counts()
 
+            if safe_terminate:
+                _, total_old_points = app.get_point_counts()
+                if total_old_points > 1e5:
+                    print('QUIT WITH SAFE TERMINATE')
+                    pygame.quit()
+
     def get_angles(self):
         for pc in self.point_collections:
             pc.get_angles()
+
+    def get_point_counts(self):
+        total_new_points = 0
+        total_old_points = 0
+        for pc in self.point_collections:
+            total_new_points += int(pc.new_points.size / 2)
+            total_old_points += int(pc.old_points.size / 2)
+        return (total_new_points, total_old_points)
 
     def print_collections(self):
         print()
@@ -67,11 +79,7 @@ class Application():
         print()
 
     def print_point_counts(self):
-        total_new_points = 0
-        total_old_points = 0
-        for pc in self.point_collections:
-            total_new_points += int(pc.new_points.size / 2)
-            total_old_points += int(pc.old_points.size / 2)
+        total_new_points, total_old_points = self.get_point_counts()
         print(f'New Points: {total_new_points}   Old Points: {total_old_points}')
 
     def draw(self, win):
@@ -127,10 +135,6 @@ class PointCollection():
         if self.old_points.size == 0:
             return Exception('No points to get angles for, try using app.permeate()')
         self.angles = np.arctan2(self.old_points[0], self.old_points[1])
-
-    def get_clusters(self):
-        kmeans = KMeans(n_clusters = 1, random_state = 0).fit(np.array([self.angles]))
-        print('Labels', kmeans.labels_)
 
 app = Application()
 app.setup()

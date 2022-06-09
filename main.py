@@ -19,7 +19,7 @@ font = pygame.font.SysFont('Roboto', 18)
 titleFont = pygame.font.SysFont('Roboto', 25)
 
 ### GET REPRESENTATION ###
-graph = group('surface')
+graph = group('cyclic', 2, 3)
 
 print('Finding interval starting points...')
 #words = allwords(graph, 5, 5)

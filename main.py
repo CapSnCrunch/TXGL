@@ -19,15 +19,15 @@ font = pygame.font.SysFont('Roboto', 18)
 titleFont = pygame.font.SysFont('Roboto', 25)
 
 ### GET REPRESENTATION ###
-graph = group('cyclic', 2, 3)
+graph = group('surface')
 
 print('Finding interval starting points...')
-#words = allwords(graph, 5, 5)
+# words = allwords(graph, 3, 3)
 words = oneword(graph, 100)
 print('Initializing intervals...')
 
 # CREATE INITIAL INTERVALS OF SIZE eps
-eps = 5e-5
+eps = 5e-4
 disconnected_intervals = []
 print('words', words)
 for i in range(len(words)):

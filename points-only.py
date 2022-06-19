@@ -3,6 +3,7 @@ import numpy as np
 from groups import group
 from colors import colors
 from classes.graph_funcs import *
+from classes.intervals import *
 
 class Application():
     def __init__(self):
@@ -69,6 +70,10 @@ class Application():
             total_old_points += int(pc.old_points.size / 2)
         return (total_new_points, total_old_points)
 
+    def angles_to_intervals(self):
+        for pc in self.point_collections:
+            pc.angles_to_intervals()
+
     def print_collections(self):
         print()
         for i, pc in enumerate(self.point_collections):
@@ -101,6 +106,9 @@ class PointCollection():
 
         # Values between 0 and pi
         self.angles = []
+
+        # Disconnected interval
+        self.disconnected_interval = DisconnectedInterval()
 
     def add_points(self, points):
         if self.new_points.size == 0:
@@ -145,6 +153,34 @@ class PointCollection():
                 index += 1
         self.angles = new_angles
 
+    def angles_to_intervals(self, bucket_count = 200):
+        if len(self.angles) == 0:
+            return 'No angles to convert'
+        self.angles.sort()
+
+        fixed_angles = (np.array(self.angles) + np.pi) / 2
+
+        # bins = np.digitize(fixed_angles, np.linspace(0, np.pi, bin_count))
+        buckets = list(np.histogram(fixed_angles, bucket_count)[0]) + [0]
+
+        a, b = -1, -1
+        intervals = []
+        for i, bucket in enumerate(buckets):
+            # print(f'a={a}, b={b}, i={i}, bucket={bucket}')
+            if bucket > 0 and a == -1:
+                a, b = i, i
+            elif bucket > 0 and a != -1:
+                b = i
+            elif bucket == 0 and b != -1:
+                intervals.append(Interval(a, b))
+                a, b = -1, -1
+        self.disconnected_interval.components = intervals
+        
+        # idx = np.where(bins[0]!=0)[0]
+        # print('bins', bins[0])
+        # print('idx', idx)
+        # np.split(bins[idx], np.where(np.diff(idx)!=1)[0]+1)
+
 app = Application()
 app.setup()
 
@@ -164,6 +200,9 @@ while True:
         if event.type == pygame.KEYDOWN:
             if event.key == pygame.K_SPACE:
                 app.permeate(steps = 1, print_counts = False)
+            elif event.key == pygame.K_UP:
+                print('up')
+                app.angles_to_intervals()
             
     win.fill((255, 255, 255))
     app.draw(win)

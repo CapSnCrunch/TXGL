@@ -4,7 +4,7 @@ from matplotlib.patches import Circle, Arc
 from classes.interval_funcs import *
 
 class Interval():
-    def __init__(self, a, b, color):
+    def __init__(self, a, b, color = np.array([0,0,1])):
         # TODO We can probably get rid of e1, e2, mat, and letters
         self.a = a % np.pi
         self.b = b % np.pi

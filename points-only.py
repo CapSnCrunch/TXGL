@@ -1,4 +1,5 @@
 import pygame
+import pickle
 import numpy as np
 from groups import group
 from colors import colors
@@ -71,8 +72,9 @@ class Application():
         return (total_new_points, total_old_points)
 
     def angles_to_intervals(self):
-        for pc in self.point_collections:
+        for i, pc in enumerate(self.point_collections):
             pc.angles_to_intervals()
+            pc.disconnected_interval.color = colors[i]
 
     def print_collections(self):
         print()
@@ -135,7 +137,17 @@ class PointCollection():
     def get_angles(self):
         if self.old_points.size == 0:
             return Exception('No points to get angles for, try using app.permeate()')
-        self.angles = np.arctan2(self.old_points[0], self.old_points[1])
+        
+        # RP1 to S1 via homeo RP1 -> S1
+        # x, y = self.old_points[0], self.old_points[1]
+        # s1x = np.divide(2 * np.multiply(x, y), np.square(x) + np.square(y))
+        # s1y = np.divide(np.square(x) - np.square(y), np.square(x) + np.square(y))
+
+        # # get arc params
+        # self.angles = np.arctan(s1y, s1x)
+
+        self.angles = np.arctan2(self.old_points[1], self.old_points[0])
+
         # self.condense_angles()
     
     def condense_angles(self):
@@ -153,18 +165,19 @@ class PointCollection():
                 index += 1
         self.angles = new_angles
 
-    def angles_to_intervals(self, bucket_count = 200):
+    def angles_to_intervals(self, bucket_count = 300):
         if len(self.angles) == 0:
             return 'No angles to convert'
         self.angles.sort()
 
-        fixed_angles = (np.array(self.angles) + np.pi) / 2
-
         # bins = np.digitize(fixed_angles, np.linspace(0, np.pi, bin_count))
-        buckets = list(np.histogram(fixed_angles, bucket_count)[0]) + [0]
+        histogram = np.histogram(self.angles, bucket_count, range=(0, np.pi))
+        buckets = list(histogram[0]) + [0]
 
         a, b = -1, -1
         intervals = []
+        print('histogram', histogram)
+        print('self.angles', self.angles)
         for i, bucket in enumerate(buckets):
             # print(f'a={a}, b={b}, i={i}, bucket={bucket}')
             if bucket > 0 and a == -1:
@@ -172,7 +185,9 @@ class PointCollection():
             elif bucket > 0 and a != -1:
                 b = i
             elif bucket == 0 and b != -1:
-                intervals.append(Interval(a, b))
+                print('a, b', a, b)
+                print(a * np.pi/bucket_count, b * np.pi/bucket_count + 1e-4)
+                intervals.append(Interval(a * np.pi/bucket_count, b * np.pi/bucket_count + 1e-4))
                 a, b = -1, -1
         self.disconnected_interval.components = intervals
         
@@ -201,8 +216,15 @@ while True:
             if event.key == pygame.K_SPACE:
                 app.permeate(steps = 1, print_counts = False)
             elif event.key == pygame.K_UP:
-                print('up')
                 app.angles_to_intervals()
+                with open('initial-intervals.pkl', 'wb') as output:
+                    print('Saving initial intervals...')
+                    for i, pc in enumerate(app.point_collections):
+                        pickle.dump(pc.disconnected_interval, output, pickle.HIGHEST_PROTOCOL)
+                        print(' ', i)
+                        for component in pc.disconnected_interval.components:
+                            print('  ', component.a, component.b)
+                    print('Saved!')
             
     win.fill((255, 255, 255))
     app.draw(win)

@@ -3,7 +3,7 @@ import numpy as np
 from classes.interval_funcs import *
 from classes.group_funcs import *
 from classes.intervals import Interval
-from classes.pingpong import PingPong
+from archive.pingpong import PingPong
 
 if __name__ == '__main__':
 

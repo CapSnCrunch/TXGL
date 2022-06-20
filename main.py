@@ -1,6 +1,8 @@
+from dis import disco
 from select import select
 from tempfile import tempdir
 import pygame
+import pickle
 from matplotlib.pyplot import disconnect
 from classes.intervals import *
 from classes.interval_funcs import *
@@ -19,31 +21,46 @@ font = pygame.font.SysFont('Roboto', 18)
 titleFont = pygame.font.SysFont('Roboto', 25)
 
 ### GET REPRESENTATION ###
+# graph = group('cyclic', 2, 3)
+# graph = group('triangle')
 graph = group('surface')
 
-print('Finding interval starting points...')
-# words = allwords(graph, 3, 3)
-words = oneword(graph, 100)
-print('Initializing intervals...')
-
-# CREATE INITIAL INTERVALS OF SIZE eps
-eps = 5e-4
+### INITIALIZE INTERVALS ###
 disconnected_intervals = []
-print('words', words)
-for i in range(len(words)):
-    intervals = []
-    color = colors[i]
-    for j in range(len(words[i])):
-        s = np.arctan2(np.linalg.svd(words[i][j])[0][1][0], np.linalg.svd(words[i][j])[0][0][0])
-        intervals.append(Interval(s - eps, s + eps, color))
-    initial_intervals = DisconnectedInterval(intervals, color)
-    initial_intervals.combine()
-    disconnected_intervals.append(initial_intervals)
 
-print('Intervals created.')
+def create_intervals(eps = 5e-4):
+    ''' Create intervals of size eps around the singular directions of words on the graph'''
 
-# Get the current failing images
+    print('Finding interval starting points...')
+    # words = allwords(graph, 3, 3)
+    words = oneword(graph, 100)
+    print('Initializing intervals...')
+    print('words', words)
+
+    for i in range(len(words)):
+        intervals = []
+        color = colors[i]
+        for j in range(len(words[i])):
+            s = np.arctan2(np.linalg.svd(words[i][j])[0][1][0], np.linalg.svd(words[i][j])[0][0][0])
+            intervals.append(Interval(s - eps, s + eps, color))
+        initial_intervals = DisconnectedInterval(intervals, color)
+        initial_intervals.combine()
+        disconnected_intervals.append(initial_intervals)
+    print('Intervals created.')
+create_intervals()
+
+def load_intervals(file='initial-intervals.pkl'):
+    ''' Load premade initial disconnected intervals'''
+    with open(file, 'rb') as inp:
+        while True:
+            try:
+                disconnected_intervals.append(pickle.load(inp))
+            except EOFError:
+                break
+# load_intervals()
+
 def get_failures():
+    ''' Get the current failing images of all intervals'''
     failed = {}
     # Look at a particular L1 disconnected interval
     for l1 in list(graph.keys()):
@@ -54,6 +71,14 @@ def get_failures():
             for comp in disconnected_intervals[l2].components:
                 if not disconnected_intervals[l1].contains_image(DisconnectedInterval([comp]), graph[l1][l2]):
                     failed[l1] += [(l2, comp)]
+    total = 0
+    for i in range(len(failed)):
+        total += len(failed[i])
+    if total == 0:
+        print('FOUND VALID INTERVALS')
+    else:
+        print('Number of failed containments', total)
+
     return failed
 
 def expand_interval(n, delta = 5e-3, debug = False):
@@ -62,56 +87,50 @@ def expand_interval(n, delta = 5e-3, debug = False):
         n: Index of interval in disconnected_intervals to expand
         delta: Padding on patches over images
     '''
-    print('num components before', len(disconnected_intervals[n].components))
-    print('MAKING PATCHES')
+    # print('num components before', len(disconnected_intervals[n].components))
+    # print('MAKING PATCHES')
     new_components = []
     for l2 in graph[n]:
         # Create a new component around each component which was not contained
         for comp in disconnected_intervals[l2].components:
             if not disconnected_intervals[n].contains_image(DisconnectedInterval([comp]), graph[n][l2]):
                 image = comp.get_image(graph[n][l2])
-                image.a -= delta
-                image.b += delta    
+                image.a = (image.a - delta) % np.pi
+                image.b = (image.b + delta) % np.pi
                 new_components.append(image)
-                print('  ('+str(image.a), str(image.b)+')')
+                if debug:
+                    print('  ('+str(image.a), str(image.b)+')')
     disconnected_intervals[n].components += new_components
-    print('num components after', len(disconnected_intervals[n].components))
+    # print('num components after', len(disconnected_intervals[n].components))
     disconnected_intervals[n].combine(3e-2, debug) # (5e-2)
-    print()
+    # print()
 
 # Iterate the search on the global variable disconnected_intervals
-def iterate():
+def iterate(delta = 5e-3):
     ### PATCH SEARCH ###
     ''' Extend a disconnected interval exactly the amount required by adding components around the images it must contain and combining'''
     '''
         n: Index of interval in disconnected_intervals to expand
         delta: Padding on patches over images
     '''
-    delta = 1e-2 # Extra space just over the image (3e-4)
 
-    failed = {}
+    for i in range(len(disconnected_intervals)):
+        expand_interval(i)
+
     # Look at a particular L1 disconnected interval
-    for l1 in list(graph.keys()):
-        # Look at each disconnected interval L2 which must be contained in L1
-        failed[l1] = []
-        for l2 in graph[l1]:
-            # Create a new component around each component which was not contained
-            for comp in disconnected_intervals[l2].components:
-                if not disconnected_intervals[l1].contains_image(DisconnectedInterval([comp]), graph[l1][l2]):
-                    failed[l1] += [(l2, comp)]
-                    image = comp.get_image(graph[l1][l2])
-                    image.a -= delta
-                    image.b += delta
-                    disconnected_intervals[l1].components.append(image)
-            disconnected_intervals[l1].combine(3e-2) # (5e-2)
-    
-    total = 0
-    for i in range(len(failed)):
-        total += len(failed[i])
-    if total == 0:
-        print('FOUND VALID INTERVALS')
-    else:
-        print('Number of failed containments', total)
+    # for l1 in list(graph.keys()):
+    #     # Look at each disconnected interval L2 which must be contained in L1
+    #     failed[l1] = []
+    #     for l2 in graph[l1]:
+    #         # Create a new component around each component which was not contained
+    #         for comp in disconnected_intervals[l2].components:
+    #             if not disconnected_intervals[l1].contains_image(DisconnectedInterval([comp]), graph[l1][l2]):
+    #                 failed[l1] += [(l2, comp)]
+    #                 image = comp.get_image(graph[l1][l2])
+    #                 image.a -= delta
+    #                 image.b += delta
+    #                 disconnected_intervals[l1].components.append(image)
+    #         disconnected_intervals[l1].combine(3e-2) # (5e-2)
 
 # MAIN LOOP
 iteration = 0
@@ -181,7 +200,7 @@ while True:
                 selected_error = None
             if width * 0.11 < cursor[0] < width * 0.14 and height * 0.1 - dh/2 < cursor[1] < height * 0.9:
                 selected_interval = -1
-                selected_failure = int((cursor[1] - height * 0.1 + dh/2) // dh)
+                selected_failure = min(int((cursor[1] - height * 0.1 + dh/2) // dh), len(disconnected_intervals) - 1)
                 selected_error = None
             elif selected_failure != -1 and failed != {}:
                 # Check if we are selecting a particular image

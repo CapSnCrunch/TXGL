@@ -14,7 +14,7 @@ from colors import colors
 ### CREATE DEBUGGER WINDOW ###
 width, height = 1000, 600
 win = pygame.display.set_mode((width, height))
-pygame.display.set_caption('TXGL Patch Search Debugger')
+pygame.display.set_caption('TXGL Patch Search Tool')
 
 pygame.font.init()
 font = pygame.font.SysFont('Roboto', 18)
@@ -47,7 +47,7 @@ def create_intervals(eps = 5e-4):
         initial_intervals.combine()
         disconnected_intervals.append(initial_intervals)
     print('Intervals created.')
-create_intervals()
+# create_intervals()
 
 def load_intervals(file='initial-intervals.pkl'):
     ''' Load premade initial disconnected intervals'''
@@ -57,8 +57,9 @@ def load_intervals(file='initial-intervals.pkl'):
                 disconnected_intervals.append(pickle.load(inp))
             except EOFError:
                 break
-# load_intervals()
+load_intervals()
 
+# ITERATION FUNCTIONS
 def get_failures():
     ''' Get the current failing images of all intervals'''
     failed = {}
@@ -70,6 +71,8 @@ def get_failures():
             # Create a new component around each component which was not contained
             for comp in disconnected_intervals[l2].components:
                 if not disconnected_intervals[l1].contains_image(DisconnectedInterval([comp]), graph[l1][l2]):
+                    if comp.b > np.pi:
+                        comp.b = comp.b % np.pi
                     failed[l1] += [(l2, comp)]
     total = 0
     for i in range(len(failed)):
@@ -78,6 +81,7 @@ def get_failures():
         print('FOUND VALID INTERVALS')
     else:
         print('Number of failed containments', total)
+    print()
 
     return failed
 
@@ -102,7 +106,7 @@ def expand_interval(n, delta = 5e-3, debug = False):
                     print('  ('+str(image.a), str(image.b)+')')
     disconnected_intervals[n].components += new_components
     # print('num components after', len(disconnected_intervals[n].components))
-    disconnected_intervals[n].combine(3e-2, debug) # (5e-2)
+    disconnected_intervals[n].combine(0, debug) # (5e-2)
     # print()
 
 # Iterate the search on the global variable disconnected_intervals
@@ -110,7 +114,6 @@ def iterate(delta = 5e-3):
     ### PATCH SEARCH ###
     ''' Extend a disconnected interval exactly the amount required by adding components around the images it must contain and combining'''
     '''
-        n: Index of interval in disconnected_intervals to expand
         delta: Padding on patches over images
     '''
 
@@ -145,6 +148,7 @@ while True:
         if event.type == pygame.QUIT:
             pygame.quit()
         if event.type == pygame.KEYDOWN:
+            # Expand all intervals in order
             if event.key == pygame.K_SPACE:
                 print()
                 print('Iteration', iteration)
@@ -156,15 +160,18 @@ while True:
 
                 print()
                 print('Press SPACE to run iteration', iteration)
-                
+            
+            # Expand single interval without debug
             elif event.key == pygame.K_e and selected_failure != -1:
                 expand_interval(selected_failure)
                 failed = get_failures()
 
+            # Expand single interval with debug
             elif event.key == pygame.K_d and selected_failure != -1:
                 expand_interval(selected_failure, debug = True)
                 failed = get_failures()
 
+            # List the components and failures of selected interval
             elif event.key == pygame.K_UP and selected_failure != -1:
                 print('COMPONENTS OF INTERVAL', selected_failure)
                 for i, comp in enumerate(disconnected_intervals[selected_failure].components):

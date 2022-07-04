@@ -132,7 +132,7 @@ def group(name = 'cyclic', *args):
         #     37: {2: d, 20: D, 16: c, 5: C, 7: B, 9: A}
         # }
 
-        s = 5.8
+        s = 6
         a = np.array([
             [  s,   0],
             [  0, 1/s]

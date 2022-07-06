@@ -57,7 +57,6 @@ def get_lambda(interval, image):
     w0, w1 = Aw[0][0], Aw[1][0]
     z0, z1 = Az[0][0], Az[1][0]
 
-
     sigma = (((w0+w1)*(z0+z1)) / ((w1-w0)*(z1-z0))) ** (0.25)
     print(f'sigma = {sigma}')
 
